@@ -1,0 +1,17 @@
+{
+  "build": {
+    "SCREENS": "../../../modules/piu/screens"
+  },
+  "include": [
+    "$(MODDABLE)/examples/manifest_base.json",
+    "$(MODDABLE)/examples/manifest_piu.json",
+    "$(SCREENS)/qrcode/manifest.json",
+    "$(SCREENS)/profile/manifest.json"
+  ],
+  "modules": {
+    "*": ["./main"]
+  },
+  "resources": {
+    "*-image": ["./assets/profile"]
+  }
+}
