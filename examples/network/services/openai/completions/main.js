@@ -8,7 +8,7 @@ const headers = new Headers([
 ]);
 const body = JSON.stringify({
   model: "gpt-3.5-turbo",
-  messages: [{ role: "user", content: "Say this is a test" }],
+  messages: [{ role: "user", content: "Tell me about Moddable SDK in short." }],
 });
 
 const response = await fetch("https://api.openai.com/v1/chat/completions", {
