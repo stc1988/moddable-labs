@@ -10,7 +10,7 @@ const headers = new Headers([
 const body = JSON.stringify({
   model: "claude-3-haiku-20240307",
   max_tokens: 256,
-  messages: [{ role: "user", content: "Say this is a test" }],
+  messages: [{ role: "user", content: "Tell me about Moddable SDK in short." }],
 });
 
 const response = await fetch("https://api.anthropic.com/v1/messages", {
