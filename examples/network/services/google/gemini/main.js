@@ -3,7 +3,7 @@ import { fetch, Headers } from "fetch";
 
 const apiKey = config.api_key;
 const headers = new Headers([["Content-Type", "application/json"]]);
-const model = "gemini-pro";
+const model = "gemini-1.5-flash-latest";
 const body = JSON.stringify({
   "contents" :[
     {"parts":[{"text": "Tell me about Moddable SDK in short."}]}
