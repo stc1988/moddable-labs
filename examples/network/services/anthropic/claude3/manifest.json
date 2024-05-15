@@ -1,21 +1,21 @@
 {
-    "include": [
-      "$(MODDABLE)/examples/manifest_base.json",
-      "$(MODDABLE)/examples/manifest_net.json",
-      "$(MODDABLE)/examples/io/tcp/fetch/manifest_fetch.json"
-    ],
-    "modules": {
-      "*": "./main"
-    },
-    "data": {
-      "*": ["$(MODULES)/crypt/data/ca233"]
-    },
-    "defines": {
-      "main": {
-        "async": 1
-      }
-    },
-    "config": {
-      "api_key": "YOUR-API-KEY"
+  "include": [
+    "$(MODDABLE)/examples/manifest_base.json",
+    "$(MODDABLE)/examples/manifest_net.json",
+    "$(MODDABLE)/examples/io/tcp/fetch/manifest_fetch.json"
+  ],
+  "modules": {
+    "*": "./main"
+  },
+  "data": {
+    "*": ["$(MODULES)/crypt/data/ca233"]
+  },
+  "defines": {
+    "main": {
+      "async": 1
     }
+  },
+  "config": {
+    "api_key": "YOUR-API-KEY"
   }
+}
