@@ -4,9 +4,11 @@ import Headers from "headers";
 import * as streams from "streams";
 for (let key in streams) globalThis[key] = streams[key];
 
+// API specification: https://platform.openai.com/docs/guides/text-generation/chat-completions-api
+
 const apiKey = config.api_key;
 
-function completions(options) {
+function completions(apiKey, model, content) {
   return new ReadableStream({
     start(controller) {
       const source = new EventSource(
@@ -17,7 +19,11 @@ function completions(options) {
             ["Content-Type", "application/json"],
             ["Authorization", `Bearer ${apiKey}`],
           ]),
-          body: JSON.stringify(options),
+          body: JSON.stringify({
+            stream: true,
+            model,
+            messages: [{ role: "user", content: content }],
+          }),
         }
       );
       source.onmessage = function (e) {
@@ -25,7 +31,8 @@ function completions(options) {
           source.close();
           controller.close();
         } else {
-          controller.enqueue(JSON.parse(e.data));
+          const obj = JSON.parse(e.data, ["choices", "delta", "content"]);
+          controller.enqueue(obj.choices[0].delta.content);
         }
       };
     },
@@ -33,18 +40,13 @@ function completions(options) {
 }
 
 async function main() {
-  const stream = completions({
-    stream: true,
-    model: "gpt-3.5-turbo",
-    messages: [
-      {
-        role: "user",
-        content: "Tell me about Moddable SDK in short. ",
-      },
-    ],
-  });
+  const stream = completions(
+    config.api_key,
+    "gpt-3.5-turbo",
+    "Tell me about Moddable SDK in short."
+  );
   for await (const chunk of stream) {
-    trace(chunk.choices[0]?.delta?.content || "");
+    trace(chunk || "");
   }
 }
 
