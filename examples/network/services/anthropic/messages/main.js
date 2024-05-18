@@ -1,28 +1,30 @@
 import config from "mc/config";
 import { fetch, Headers } from "fetch";
 
-// API specification: https://platform.openai.com/docs/guides/text-generation/chat-completions-api
+// API specification: https://docs.anthropic.com/en/api/messages
 
 async function completions(apiKey, model, content) {
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: new Headers([
       ["Content-Type", "application/json"],
-      ["Authorization", `Bearer ${apiKey}`],
+      ["x-api-key", apiKey],
+      ["anthropic-version", "2023-06-01"],
     ]),
     body: JSON.stringify({
       model,
+      max_tokens: 256,
       messages: [{ role: "user", content: content }],
     }),
   });
   const text = await response.text();
-  const obj = JSON.parse(text, ["choices", "message", "content"]);
-  return obj.choices[0].message.content;
+  const obj = JSON.parse(text, ["content", "text"]);
+  return obj.content[0].text;
 }
 
 const content = await completions(
   config.api_key,
-  "gpt-3.5-turbo",
+  "claude-3-haiku-20240307",
   "Tell me about Moddable SDK in short."
 );
 
