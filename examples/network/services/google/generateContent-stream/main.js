@@ -1,50 +1,58 @@
+import { fetch, Headers } from "fetch";
 import config from "mc/config";
-import EventSource from "eventsource";
-import Headers from "headers";
-import * as streams from "streams";
-for (let key in streams) globalThis[key] = streams[key];
-
-import Timer from "timer";
-import Time from "time";
-
 // API specification: https://ai.google.dev/api/rest/v1beta/models/streamGenerateContent
 
 const apiKey = config.api_key;
 
 function completions(apiKey, model, content) {
   return new ReadableStream({
-    start(controller) {
-      let ticks;
-      const source = new EventSource(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`,
-        {
-          method: "POST",
-          headers: new Headers([["Content-Type", "text/event-stream"]]),
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: content }] }],
-          }),
-        }
-      );
-      source.onmessage = function (e) {
-        const obj = JSON.parse(e.data, [
-          "candidates",
-          "content",
-          "parts",
-          "text",
-        ]);
-        controller.enqueue(obj.candidates[0].content.parts[0].text);
+    async start(controller) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${apiKey}`,
+          {
+            method: "POST",
+            headers: new Headers([["Content-Type", "application/json"]]),
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: content }] }],
+            }),
+          }
+        );
+        const transformedBody = response.body.pipeThrough(
+          new TextDecoderStream()
+        );
+        const reader = transformedBody.getReader();
 
-        ticks = Time.ticks;
-      };
+        async function push() {
+          while (true) {
+            const { done, value } = await reader.read();
+            // debugger
+            if (done) {
+              controller.close();
+              break;
+            }
 
-      // Close the stream after a certain amount of time has passed since the last message.
-      Timer.repeat((id) => {
-        if (ticks && Time.ticks - ticks > 3000) {
-          Timer.clear(id);
-          source.close();
-          controller.close();
+            if (value.startsWith("[") || value.startsWith(",")) {
+              const obj = JSON.parse(value.slice(1), [
+                "candidates",
+                "content",
+                "parts",
+                "text",
+              ]);
+              controller.enqueue(obj.candidates[0].content.parts[0].text);
+            } else if (value.startsWith("]")) {
+              controller.close();
+              break;
+            }
+          }
         }
-      }, 500);
+
+        push().catch((error) => {
+          controller.error(error);
+        });
+      } catch (error) {
+        controller.error(error);
+      }
     },
   });
 }
