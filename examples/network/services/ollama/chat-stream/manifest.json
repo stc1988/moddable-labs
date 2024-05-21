@@ -1,0 +1,16 @@
+{
+  "include": [
+    "$(MODDABLE)/examples/manifest_base.json",
+    "$(MODDABLE)/examples/manifest_net.json",
+    "$(MODDABLE)/examples/io/streams/examples/fetch/manifest_fetch.json"
+  ],
+  "modules": {
+    "*": ["./main"]
+  },
+  "creation": {
+    "stack": 1024
+  },
+  "config": {
+    "host": "http://localhost:11434"
+  }
+}
