@@ -3,8 +3,9 @@ import config from "mc/config";
 // API specification: https://ai.google.dev/api/rest/v1beta/models/streamGenerateContent
 
 const apiKey = config.api_key;
+const model = "gemini-1.5-flash-latest";
 
-function completions(apiKey, model, content) {
+function completions(body) {
   return new ReadableStream({
     async start(controller) {
       try {
@@ -13,9 +14,7 @@ function completions(apiKey, model, content) {
           {
             method: "POST",
             headers: new Headers([["Content-Type", "application/json"]]),
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: content }] }],
-            }),
+            body: JSON.stringify(body),
           }
         );
         const transformedBody = response.body.pipeThrough(
@@ -26,7 +25,6 @@ function completions(apiKey, model, content) {
         async function push() {
           while (true) {
             const { done, value } = await reader.read();
-            // debugger
             if (done) {
               controller.close();
               break;
@@ -58,13 +56,11 @@ function completions(apiKey, model, content) {
 }
 
 async function main() {
-  const stream = completions(
-    config.api_key,
-    "gemini-1.5-flash-latest",
-    "Tell me about Moddable SDK in short."
-  );
+  const stream = completions({
+    contents: [{ parts: [{ text: "Tell me about Moddable SDK in short." }] }],
+  });
   for await (const chunk of stream) {
-    trace(chunk || "");
+    trace(chunk);
   }
 }
 

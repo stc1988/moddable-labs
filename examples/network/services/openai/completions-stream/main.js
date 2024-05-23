@@ -8,7 +8,7 @@ for (let key in streams) globalThis[key] = streams[key];
 
 const apiKey = config.api_key;
 
-function completions(apiKey, model, content) {
+function completions(body) {
   return new ReadableStream({
     start(controller) {
       const source = new EventSource(
@@ -19,11 +19,7 @@ function completions(apiKey, model, content) {
             ["Content-Type", "application/json"],
             ["Authorization", `Bearer ${apiKey}`],
           ]),
-          body: JSON.stringify({
-            stream: true,
-            model,
-            messages: [{ role: "user", content: content }],
-          }),
+          body: JSON.stringify(body),
         }
       );
       source.onmessage = function (e) {
@@ -40,13 +36,15 @@ function completions(apiKey, model, content) {
 }
 
 async function main() {
-  const stream = completions(
-    config.api_key,
-    "gpt-3.5-turbo",
-    "Tell me about Moddable SDK in short."
-  );
+  const stream = completions({
+    stream: true,
+    model: "gpt-3.5-turbo",
+    messages: [
+      { role: "user", content: "Tell me about Moddable SDK in short." },
+    ],
+  });
   for await (const chunk of stream) {
-    trace(chunk || "");
+    trace(chunk);
   }
 }
 

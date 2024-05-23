@@ -6,7 +6,9 @@ for (let key in streams) globalThis[key] = streams[key];
 
 // API specification: https://docs.anthropic.com/en/api/messages
 
-function completions(apiKey, model, content) {
+const apiKey = config.api_key;
+
+function completions(body) {
   return new ReadableStream({
     start(controller) {
       const source = new EventSource("https://api.anthropic.com/v1/messages", {
@@ -16,12 +18,7 @@ function completions(apiKey, model, content) {
           ["x-api-key", apiKey],
           ["anthropic-version", "2023-06-01"],
         ]),
-        body: JSON.stringify({
-          stream: true,
-          max_tokens: 1024,
-          model,
-          messages: [{ role: "user", content: content }],
-        }),
+        body: JSON.stringify(body),
       });
       source.addEventListener("content_block_delta", function (e) {
         const obj = JSON.parse(e.data, ["delta", "text"]);
@@ -37,13 +34,16 @@ function completions(apiKey, model, content) {
 }
 
 async function main() {
-  const stream = completions(
-    config.api_key,
-    "claude-3-haiku-20240307",
-    "Tell me about Moddable SDK in short."
-  );
+  const stream = completions({
+    stream: true,
+    model: "claude-3-haiku-20240307",
+    max_tokens: 1024,
+    messages: [
+      { role: "user", content: "Tell me about Moddable SDK in short." },
+    ],
+  });
   for await (const chunk of stream) {
-    trace(chunk || "");
+    trace(chunk);
   }
 }
 

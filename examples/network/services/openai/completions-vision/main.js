@@ -4,44 +4,44 @@ import Resource from "Resource";
 
 // API specification: https://platform.openai.com/docs/guides/text-generation/chat-completions-api
 
-async function completions(apiKey, model, content, image) {
+const apiKey = config.api_key;
+
+async function completions(body) {
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: new Headers([
       ["Content-Type", "application/json"],
       ["Authorization", `Bearer ${apiKey}`],
     ]),
-    body: JSON.stringify({
-      model,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: content,
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:image/jpeg;base64,${image.toBase64()}`,
-              },
-            },
-          ],
-        },
-      ],
-    }),
+    body: JSON.stringify(body),
   });
   const text = await response.text();
   const obj = JSON.parse(text, ["choices", "message", "content"]);
   return obj.choices[0].message.content;
 }
 
-const content = await completions(
-  config.api_key,
-  "gpt-4o",
-  "What’s in this image?",
-  new Uint8Array(new Resource("profile.png"))
+const image = new Uint8Array(new Resource("profile.png"));
+const chatCompletion = await completions(
+  {
+    model: "gpt-4o",
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: "What’s in this image?",
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:image/jpeg;base64,${image.toBase64()}`,
+            },
+          },
+        ],
+      },
+    ]
+  }
 );
 
-trace(`${content}\n`);
+trace(`${chatCompletion}\n`);

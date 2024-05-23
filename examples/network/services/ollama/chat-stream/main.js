@@ -1,18 +1,16 @@
 import { fetch, Headers } from "fetch";
 import config from "mc/config";
 
-function completions(host, model, content) {
+const host = config.host;
+
+function completions(body) {
   return new ReadableStream({
     async start(controller) {
       try {
         const response = await fetch(`${host}/api/chat`, {
           method: "POST",
           headers: new Headers([["Content-Type", "application/json"]]),
-          body: JSON.stringify({
-            model,
-            stream: true,
-            messages: [{ role: "user", content: content }],
-          }),
+          body: JSON.stringify(body),
         });
         const transformedBody = response.body.pipeThrough(
           new TextDecoderStream()
@@ -47,13 +45,13 @@ function completions(host, model, content) {
 }
 
 async function main() {
-  const stream = completions(
-    config.host,
-    "llama3",
-    "why is the sky blue in short?"
-  );
+  const stream = completions({
+    model: "llama3",
+    stream: true,
+    messages: [{ role: "user", content: "why is the sky blue in short?" }],
+  });
   for await (const chunk of stream) {
-    trace(chunk || "");
+    trace(chunk);
   }
 }
 
