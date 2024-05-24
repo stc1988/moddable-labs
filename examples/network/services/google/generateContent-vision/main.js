@@ -13,7 +13,7 @@ async function completions(body) {
     {
       method: "POST",
       headers: new Headers([["Content-Type", "application/json"]]),
-      body: JSON.stringify(body),
+      body: body,
     }
   );
   const json = await response.json();
@@ -21,19 +21,7 @@ async function completions(body) {
 }
 
 const image = new Uint8Array(new Resource("profile.png"));
-const chatCompletion = await completions({
-  contents: [
-    {
-      parts: [
-        {
-          inlineData: {
-            mimeType: "image/png",
-            data: image.toBase64(),
-          },
-        },
-      ],
-    },
-  ],
-});
+let body = "{\"contents\":[{\"parts\":[{\"inlineData\":{\"mimeType\":\"image/png\",\"data\":\""+image.toBase64()+"\"}}]}]}"
+const chatCompletion = await completions(body);
 
 trace(`${chatCompletion}\n`);

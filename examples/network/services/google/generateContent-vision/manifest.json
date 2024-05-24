@@ -2,7 +2,9 @@
   "include": [
     "$(MODDABLE)/examples/manifest_base.json",
     "$(MODDABLE)/examples/manifest_net.json",
-    "$(MODDABLE)/examples/io/tcp/fetch/manifest_fetch.json"
+    "$(MODDABLE)/examples/io/tcp/fetch/manifest_fetch.json",
+    "$(MODULES)/data/text/decoder/manifest.json",
+		"$(MODULES)/data/text/encoder/manifest.json"
   ],
   "modules": {
     "*": "./main"
@@ -17,5 +19,16 @@
   },
   "config": {
     "api_key": "YOUR-API-KEY"
-  }
+  },
+  "creation":{
+		"static": 221184,
+		"chunk": {
+			"initial": 8192,
+			"incremental": 2048
+		},
+		"heap": {
+			"initial": 512,
+			"incremental": 64
+		}
+	}
 }
