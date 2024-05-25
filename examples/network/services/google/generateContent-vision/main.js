@@ -20,8 +20,9 @@ async function completions(body) {
   return json.candidates[0].content.parts[0].text;
 }
 
-const image = new Uint8Array(new Resource("profile.png"));
+let image = new Uint8Array(new Resource("profile.png"));
 let body = "{\"contents\":[{\"parts\":[{\"inlineData\":{\"mimeType\":\"image/png\",\"data\":\""+image.toBase64()+"\"}}]}]}"
+image = null;
 const chatCompletion = await completions(body);
 
 trace(`${chatCompletion}\n`);
