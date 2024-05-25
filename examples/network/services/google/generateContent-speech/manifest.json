@@ -17,5 +17,16 @@
   },
   "config": {
     "api_key": "YOUR-API-KEY"
-  }
+  },
+  "creation":{
+		"static": 331776,
+		"chunk": {
+			"initial": 8192,
+			"incremental": 2048
+		},
+		"heap": {
+			"initial": 512,
+			"incremental": 64
+		}
+	}
 }

@@ -13,26 +13,15 @@ async function completions(body) {
     {
       method: "POST",
       headers: new Headers([["Content-Type", "application/json"]]),
-      body: JSON.stringify(body),
+      body: body,
     }
   );
   const json = await response.json();
   return json.candidates[0].content.parts[0].text;
 }
-const audio = new Uint8Array(new Resource("speech.wav"));
-const chatCompletion = await completions({
-  contents: [
-    {
-      parts: [
-        {
-          inlineData: {
-            mimeType: "audio/wav",
-            data: audio.toBase64(),
-          },
-        },
-      ],
-    },
-  ],
-});
+let audio = new Uint8Array(new Resource("speech.wav"));
+let body = "{\"contents\":[{\"parts\":[{\"inlineData\":{\"mimeType\":\"audio/wav\",\"data\":\""+audio.toBase64()+"\"}}]}]}"
+audio = null;
+const chatCompletion = await completions(body);
 
 trace(`${chatCompletion}\n`);
