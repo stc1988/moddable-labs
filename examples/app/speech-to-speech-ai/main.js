@@ -1,0 +1,103 @@
+import AudioIn from "audioin";
+import Timer from "timer";
+import config from "mc/config";
+import { fetch, Headers } from "fetch";
+
+const apiKey = config.api_key;
+const model = "gemini-1.5-flash-latest";
+
+async function completions(body) {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: new Headers([["Content-Type", "application/json"]]),
+      body: body,
+    }
+  );
+  const json = await response.json();
+  return json.candidates[0].content.parts[0].text;
+}
+
+async function recordSamples(audioin, durationSec) {
+  const readingsPerSecond = 8;
+  const sampleCount = Math.floor(audioin.sampleRate / readingsPerSecond);
+  let samplesRemaining = durationSec * audioin.sampleRate;
+  let samples = [];
+
+  return new Promise((resolve) => {
+    Timer.repeat((id) => {
+      const s = new Int16Array(audioin.read(sampleCount));
+      samples.push(s);
+
+      samplesRemaining -= sampleCount;
+      trace(`${samplesRemaining}\n`);
+      if (samplesRemaining <= 0) {
+        Timer.clear(id);
+        resolve(samples);
+      }
+    }, 1000 / readingsPerSecond);
+  });
+}
+
+async function recordWav(durationSec) {
+  const audioin = new AudioIn();
+  const { sampleRate, numChannels, bitsPerSample } = audioin;
+  let samples = await recordSamples(audioin, durationSec);
+
+  const byteRate = sampleRate * numChannels * (bitsPerSample >> 3);
+  const contentLength = durationSec * byteRate;
+  let view = new DataView(new ArrayBuffer(44 + contentLength));
+
+  // header
+  view.setUint8(0, "R".charCodeAt());
+  view.setUint8(1, "I".charCodeAt());
+  view.setUint8(2, "F".charCodeAt());
+  view.setUint8(3, "F".charCodeAt());
+  view.setUint32(4, 36 + contentLength, true);
+  view.setUint8(8, "W".charCodeAt());
+  view.setUint8(9, "A".charCodeAt());
+  view.setUint8(10, "V".charCodeAt());
+  view.setUint8(11, "E".charCodeAt());
+  view.setUint8(12, "f".charCodeAt());
+  view.setUint8(13, "m".charCodeAt());
+  view.setUint8(14, "t".charCodeAt());
+  view.setUint8(15, " ".charCodeAt());
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, (1 * bitsPerSample) >> 3, true);
+  view.setUint16(34, bitsPerSample, true);
+  view.setUint8(36, "d".charCodeAt());
+  view.setUint8(37, "a".charCodeAt());
+  view.setUint8(38, "t".charCodeAt());
+  view.setUint8(39, "a".charCodeAt());
+  view.setUint32(40, contentLength, true);
+
+  // contents
+  let offset = 44;
+  samples.forEach((s) => {
+    for (let i = 0; i < s.length; i++) {
+      view.setInt16(offset, s[i], true);
+      offset += 2;
+    }
+  });
+  samples = null;
+  return new Uint8Array(view.buffer);
+}
+
+async function main() {
+  let audio = await recordWav(3);
+  let body =
+    '{"contents":[{"parts":[{"inlineData":{"mimeType":"audio/wav","data":"' +
+    audio.toBase64() +
+    '"}}]}]}';
+  audio = null;
+  const chatCompletion = await completions(body);
+
+  trace(`${chatCompletion}\n`);
+}
+
+main();
