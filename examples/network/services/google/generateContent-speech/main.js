@@ -20,7 +20,11 @@ async function completions(body) {
   return json.candidates[0].content.parts[0].text;
 }
 let audio = new Uint8Array(new Resource("speech.wav"));
-let body = "{\"contents\":[{\"parts\":[{\"inlineData\":{\"mimeType\":\"audio/wav\",\"data\":\""+audio.toBase64()+"\"}}]}]}"
+let body =
+  '{"contents":[{"parts":[{"inlineData":{"mimeType":"audio/wav","data":"' +
+  audio.toBase64() +
+  '"}}]}],"systemInstruction": {"parts": [{ "text": "Must answer within 3 sentenses." }],}}';
+
 audio = null;
 const chatCompletion = await completions(body);
 
