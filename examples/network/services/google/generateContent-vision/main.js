@@ -21,7 +21,10 @@ async function completions(body) {
 }
 
 let image = new Uint8Array(new Resource("profile.png"));
-let body = "{\"contents\":[{\"parts\":[{\"inlineData\":{\"mimeType\":\"image/png\",\"data\":\""+image.toBase64()+"\"}}]}]}"
+let body =
+  '{"contents":[{"parts":[{ text: "What’s in this image?" },{"inlineData":{"mimeType":"image/png","data":"' +
+  image.toBase64() +
+  '"}}]}],"systemInstruction": {"parts": [{ "text": "Must answer within 3 sentenses." }],}}';
 image = null;
 const chatCompletion = await completions(body);
 

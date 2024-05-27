@@ -20,7 +20,14 @@ async function completions(body) {
 }
 
 const chatCompletion = await completions({
-  contents: [{ parts: [{ text: "Tell me about Moddable SDK in short." }] }],
+  contents: [
+    {
+      parts: [{ text: "Tell me about Moddable SDK in short." }],
+    },
+  ],
+  systemInstruction: {
+    parts: [{ text: "Must answer within 3 sentenses." }],
+  },
 });
 
 trace(`${chatCompletion}\n`);
