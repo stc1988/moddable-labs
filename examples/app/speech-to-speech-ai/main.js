@@ -2,13 +2,17 @@ import AudioIn from "audioin";
 import Timer from "timer";
 import config from "mc/config";
 import { fetch, Headers } from "fetch";
+import AudioOut from "pins/audioout";
+import ElevenLabsStreamer from "elevenlabsstreamer";
 
-const apiKey = config.api_key;
+const googleApiKey = config.google_api_key;
 const model = "gemini-1.5-flash-latest";
+const elevenLabsApiKey = config.elevenlabs_api_key;
+debugger;
 
 async function completions(body) {
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${googleApiKey}`,
     {
       method: "POST",
       headers: new Headers([["Content-Type", "application/json"]]),
@@ -37,6 +41,28 @@ async function recordSamples(audioin, durationSec) {
         resolve(samples);
       }
     }, 1000 / readingsPerSecond);
+  });
+}
+
+function speechText(text) {
+  const audio = new AudioOut({});
+  audio.start();
+  new ElevenLabsStreamer({
+    key: elevenLabsApiKey,
+    voice: "AZnzlk1XvdvUeBnXmlld",
+    latency: 2,
+    text: text,
+    audio: {
+      out: audio,
+      stream: 0,
+    },
+    onError(e) {
+      trace("ElevenLabs ERROR: ", e, "\n");
+    },
+    onDone() {
+      trace("ElevenLabs Done\n");
+      this.close();
+    },
   });
 }
 
@@ -93,11 +119,12 @@ async function main() {
   let body =
     '{"contents":[{"parts":[{"inlineData":{"mimeType":"audio/wav","data":"' +
     audio.toBase64() +
-    '"}}]}]}';
+    '"}}]}],"systemInstruction":{"parts":[{"text":"Must answer within 3 sentenses."}]}}';
   audio = null;
   const chatCompletion = await completions(body);
 
   trace(`${chatCompletion}\n`);
+  speechText(chatCompletion);
 }
 
 main();

@@ -2,16 +2,26 @@
   "include": [
     "$(MODDABLE)/examples/manifest_base.json",
     "$(MODDABLE)/examples/manifest_net.json",
-    "$(MODDABLE)/examples/io/tcp/fetch/manifest_fetch.json"
+    "$(MODDABLE)/examples/io/tcp/fetch/manifest_fetch.json",
+    "$(MODDABLE)/examples/pins/audioout/elevenlabs-stream/manifest_elevenlabsstreamer.json"
   ],
   "modules": {
-    "*": ["./main", "$(MODULES)/pins/audioin/*"]
+    "*": ["./main", "$(MODULES)/pins/audioin/*"],
+    "pins/*": [
+			"$(MODULES)/pins/i2s/*"
+		]
   },
   "defines": {
     "audioIn": {
       "sampleRate": 16000,
       "bitsPerSample": 16
-    }
+    },
+    "audioOut": {
+			"bitsPerSample": 16,
+			"numChannels": 1,
+			"sampleRate": 44100,
+			"queueLength": 12
+		}
   },
   "data": {
     "*": ["$(MODULES)/crypt/data/ca233"]
@@ -28,7 +38,8 @@
     }
   },
   "config": {
-    "api_key": "YOUR-API-KEY"
+    "google_api_key": "YOUR-API-KEY",
+    "elevenlabs_api_key": "YOUR-API-KE"
   },
   "preload": ["audioin"],
   "platforms": {
