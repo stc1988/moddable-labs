@@ -1,0 +1,13 @@
+{
+  "include": [
+    "$(MODDABLE)/examples/manifest_net.json",
+    "$(MODDABLE)/examples/io/tcp/fetch/manifest_fetch.json"
+  ],
+  "modules": {
+    "*": "./completions"
+  },
+  "preload": "completions",
+  "data": {
+    "*": ["$(MODULES)/crypt/data/ca233"]
+  }
+}
