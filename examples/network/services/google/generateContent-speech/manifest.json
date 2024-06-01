@@ -1,14 +1,13 @@
 {
   "include": [
     "$(MODDABLE)/examples/manifest_base.json",
-    "$(MODDABLE)/examples/manifest_net.json",
-    "$(MODDABLE)/examples/io/tcp/fetch/manifest_fetch.json"
+    "../generateContent/manifest_completions.json"
   ],
   "modules": {
     "*": "./main"
   },
   "data": {
-    "*": ["$(MODULES)/crypt/data/ca233","./assets/speech"]
+    "*": ["./assets/speech"]
   },
   "defines": {
     "main": {
@@ -18,15 +17,15 @@
   "config": {
     "api_key": "YOUR-API-KEY"
   },
-  "creation":{
-		"static": 331776,
-		"chunk": {
-			"initial": 8192,
-			"incremental": 2048
-		},
-		"heap": {
-			"initial": 512,
-			"incremental": 64
-		}
-	}
+  "creation": {
+    "static": 331776,
+    "chunk": {
+      "initial": 8192,
+      "incremental": 2048
+    },
+    "heap": {
+      "initial": 512,
+      "incremental": 64
+    }
+  }
 }

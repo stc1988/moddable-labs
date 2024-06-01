@@ -1,31 +1,32 @@
 import { fetch, Headers } from "fetch";
 
-// API specification: https://platform.openai.com/docs/guides/text-generation/chat-completions-api
+// API specification: https://docs.anthropic.com/en/api/messages
 
 async function completions(options) {
   const { apiKey, body, ...o } = options;
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: new Headers([
       ["Content-Type", "application/json"],
-      ["Authorization", `Bearer ${apiKey}`],
+      ["x-api-key", apiKey],
+      ["anthropic-version", "2023-06-01"],
     ]),
     body: typeof body === "string" ? body : JSON.stringify(body),
   });
   if (response.status == 200) {
     const text = await response.text();
-    const obj = JSON.parse(text, ["choices", "message", "content"]);
-    return obj.choices[0].message.content;
+    const obj = JSON.parse(text, ["content", "text"]);
+    return obj.content[0].text;
   } else {
-    const obj = await response.json()
+    const obj = await response.json();
     throw new APIError(response.status, response.statusText, obj);
   }
 }
 
 class APIError extends Error {
   constructor(status, statusText, obj) {
-    super(`OpenAI API Error: ${status} ${statusText}`);
+    super(`Anthropic API Error: ${status} ${statusText}`);
     this.status = status;
     this.statusText = statusText;
     this.detail = obj.error;

@@ -1,22 +1,19 @@
 import { fetch, Headers } from "fetch";
 
-// API specification: https://platform.openai.com/docs/guides/text-generation/chat-completions-api
+// API specification: https://github.com/ollama/ollama/blob/main/docs/api.md
 
 async function completions(options) {
-  const { apiKey, body, ...o } = options;
+  const { host, body, ...o } = options;
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch(`${host}/api/chat`, {
     method: "POST",
-    headers: new Headers([
-      ["Content-Type", "application/json"],
-      ["Authorization", `Bearer ${apiKey}`],
-    ]),
+    headers: new Headers([["Content-Type", "application/json"]]),
     body: typeof body === "string" ? body : JSON.stringify(body),
   });
   if (response.status == 200) {
     const text = await response.text();
-    const obj = JSON.parse(text, ["choices", "message", "content"]);
-    return obj.choices[0].message.content;
+    const obj = JSON.parse(text, ["message", "content"]);
+    return obj.message.content;
   } else {
     const obj = await response.json()
     throw new APIError(response.status, response.statusText, obj);
@@ -25,7 +22,7 @@ async function completions(options) {
 
 class APIError extends Error {
   constructor(status, statusText, obj) {
-    super(`OpenAI API Error: ${status} ${statusText}`);
+    super(`Ollama API Error: ${status} ${statusText}`);
     this.status = status;
     this.statusText = statusText;
     this.detail = obj.error;

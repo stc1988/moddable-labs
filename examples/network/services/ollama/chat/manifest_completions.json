@@ -1,0 +1,9 @@
+{
+  "include": [
+    "$(MODDABLE)/examples/manifest_net.json",
+    "$(MODDABLE)/examples/io/tcp/fetch/manifest_fetch.json"
+  ],
+  "modules": {
+    "*": "./completions"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "include": [
+    "$(MODDABLE)/examples/manifest_net.json",
+    "$(MODDABLE)/examples/io/tcp/eventsource/manifest_eventsource.json"
+  ],
+  "modules": {
+    "*": ["./completions", "$(MODDABLE)/examples/io/streams/modules/streams"]
+  },
+  "preload": ["streams"],
+  "data": {
+    "*": ["$(MODULES)/crypt/data/ca233"]
+  }
+}
