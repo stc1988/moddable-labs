@@ -1,0 +1,20 @@
+{
+  "include": [
+    "$(MODDABLE)/examples/manifest_base.json",
+    "./manifest_completions.json"
+  ],
+  "modules": {
+    "*": "./main"
+  },
+  "data": {
+    "*": ["$(MODULES)/crypt/data/ca233","../../../../../examples/piu/screens/assets/profile"]
+  },
+  "defines": {
+    "main": {
+      "async": 1
+    }
+  },
+  "config": {
+    "api_key": "YOUR-API-KEY"
+  }
+}
