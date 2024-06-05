@@ -29,22 +29,21 @@ function completions(options) {
         controller.close();
       });
 
-      source.onerror = function() {
+      source.onerror = function(error) {
         source.close();
-        controller.close();
-        /// TODO Error handling
+        controller.error(new APIError(error.status, error.statusText));
       };
     },
   });
 }
 
 class APIError extends Error {
-  constructor(response) {
-    super(`OpenAI API Error: ${response.status} ${response.statusText}`);
-    this.status = response.status;
-    this.statusText = response.statusText;
+  constructor(status, statusText, obj) {
+    super(`OpenAI API Error: ${status} ${statusText}`);
+    this.status = status;
+    this.statusText = statusText;
+    this.detail = obj?.error;
   }
 }
-
 export default completions;
 
