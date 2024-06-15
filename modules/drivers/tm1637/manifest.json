@@ -1,0 +1,11 @@
+{
+	"include": [
+		"$(MODDABLE)/modules/io/manifest.json"
+	],
+	"modules": {
+		"*": ["./tm1637"]
+	},
+	"preload": [
+		"tm1637"
+	]
+}
