@@ -1,5 +1,11 @@
 # drivers
 
+## rcwl-9620
+
+ultrasonic distance sensor
+
+Tested on [UNIT SONIC I2C](https://docs.m5stack.com/en/unit/sonic.i2c)
+
 ## tm1637
 
 7 segments 4 digits LED display

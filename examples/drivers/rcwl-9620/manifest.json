@@ -1,0 +1,9 @@
+{
+  "include": [
+    "$(MODDABLE)/examples/manifest_base.json",
+    "../../../modules/drivers/rcwl-9620/manifest.json"
+  ],
+  "modules": {
+    "*": ["./main"]
+  }
+}
