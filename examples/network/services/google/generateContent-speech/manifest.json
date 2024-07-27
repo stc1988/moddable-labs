@@ -7,7 +7,7 @@
     "*": "./main"
   },
   "data": {
-    "*": ["./assets/speech"]
+    "speech": ["../../../../assets/sound/speech2.wav"]
   },
   "defines": {
     "main": {
