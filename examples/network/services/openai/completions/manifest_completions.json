@@ -8,6 +8,8 @@
   },
   "preload": "completions",
   "data": {
-    "*": ["$(MODULES)/crypt/data/ca233"]
+    "*": [
+      "$(MODDABLE)/modules/crypt/data/ca236"
+    ]
   }
 }

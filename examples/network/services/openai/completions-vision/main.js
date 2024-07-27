@@ -8,7 +8,7 @@ const apiKey = config.api_key;
 
 let image = new Uint8Array(new Resource("profile.png"));
 const body = JSON.stringify({
-  model: "gpt-4o",
+  model: "gpt-4o-mini",
   messages: [
     {
       role: "user",

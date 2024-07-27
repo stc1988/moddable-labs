@@ -8,6 +8,6 @@
   },
   "preload": ["streams", "completions"],
   "data": {
-    "*": ["$(MODULES)/crypt/data/ca233"]
+    "*": ["$(MODULES)/crypt/data/ca236"]
   }
 }

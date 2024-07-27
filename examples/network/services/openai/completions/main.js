@@ -7,7 +7,7 @@ try {
   const chatCompletion = await completions({
     apiKey,
     body: {
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o-mini",
       messages: [
         { role: "user", content: "Tell me about Moddable SDK in short." },
       ],
