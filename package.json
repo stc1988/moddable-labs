@@ -14,6 +14,6 @@
   "dependencies": {
   },
   "devDependencies": {
-    "@moddable/typings": "^1.0.3"
+    "@moddable/typings": "^4.9.5"
   }
 }
