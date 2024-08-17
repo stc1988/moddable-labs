@@ -7,13 +7,11 @@
     "example": "examples"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-  },
   "devDependencies": {
+    "@biomejs/biome": "1.8.3",
     "@moddable/typings": "^4.9.5"
   }
 }
