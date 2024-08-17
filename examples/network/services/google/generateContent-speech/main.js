@@ -7,11 +7,7 @@ const model = "gemini-1.5-flash-latest";
 
 try {
   let audio = new Uint8Array(new Resource("speech.wav"));
-  const body =
-    '{"contents":[{"parts":[{"inlineData":{"mimeType":"audio/wav","data":"' +
-    audio.toBase64() +
-    '"}}]}],"systemInstruction": {"parts": [{ "text": "Must answer within 3 sentenses." }],}}';
-
+  const body = `{"contents":[{"parts":[{"inlineData":{"mimeType":"audio/wav","data":"${audio.toBase64()}"}}]}],"systemInstruction":·{"parts":·[{·"text":·"Must·answer·within·3·sentenses."·}],}}`;
   audio = null;
 
   const chatCompletion = await completions({

@@ -14,14 +14,13 @@ async function completions(options) {
     ]),
     body: typeof body === "string" ? body : JSON.stringify(body),
   });
-  if (response.status == 200) {
+  if (response.status === 200) {
     const text = await response.text();
     const obj = JSON.parse(text, ["content", "text"]);
     return obj.content[0].text;
-  } else {
-    const obj = await response.json();
-    throw new APIError(response.status, response.statusText, obj);
   }
+  const obj = await response.json();
+  throw new APIError(response.status, response.statusText, obj);
 }
 
 class APIError extends Error {

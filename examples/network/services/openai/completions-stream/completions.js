@@ -22,7 +22,7 @@ function completions(options) {
         },
       );
       source.onmessage = (e) => {
-        if (e.data == "[DONE]") {
+        if (e.data === "[DONE]") {
           source.close();
           controller.close();
         } else {

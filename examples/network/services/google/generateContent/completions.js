@@ -13,13 +13,12 @@ async function completions(options) {
       body: typeof body === "string" ? body : JSON.stringify(body),
     },
   );
-  if (response.status == 200) {
+  if (response.status === 200) {
     const json = await response.json();
     return json.candidates[0].content.parts[0].text;
-  } else {
-    const obj = await response.json();
-    throw new APIError(response.status, response.statusText, obj);
   }
+  const obj = await response.json();
+  throw new APIError(response.status, response.statusText, obj);
 }
 
 class APIError extends Error {

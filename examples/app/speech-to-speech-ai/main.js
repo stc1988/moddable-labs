@@ -103,22 +103,19 @@ async function recordWav(durationSec) {
 
   // contents
   let offset = 44;
-  samples.forEach((s) => {
+  for (const s in sampleRate) {
     for (let i = 0; i < s.length; i++) {
       view.setInt16(offset, s[i], true);
       offset += 2;
     }
-  });
+  }
   samples = null;
   return new Uint8Array(view.buffer);
 }
 
 async function main() {
   let audio = await recordWav(3);
-  const body =
-    '{"contents":[{"parts":[{"inlineData":{"mimeType":"audio/wav","data":"' +
-    audio.toBase64() +
-    '"}}]}],"systemInstruction":{"parts":[{"text":"Must answer within 3 sentenses."}]}}';
+  const body = `{"contents":[{"parts":[{"inlineData":{"mimeType":"audio/wav","data":"${audio.toBase64()}"}}]}],"systemInstruction":{"parts":[{"text":"Must·answer·within·3·sentenses."}]}}`;
   audio = null;
   const chatCompletion = await completions(body);
 

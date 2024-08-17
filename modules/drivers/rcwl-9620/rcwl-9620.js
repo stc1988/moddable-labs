@@ -41,11 +41,11 @@ class RCWL9620 {
 
     if (distance > MAX_RANGE) {
       return MAX_RANGE;
-    } else if (distance < MIN_RANGE) {
-      return MIN_RANGE;
-    } else {
-      return distance;
     }
+    if (distance < MIN_RANGE) {
+      return MIN_RANGE;
+    }
+    return distance;
   }
 
   close() {

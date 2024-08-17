@@ -10,14 +10,13 @@ async function completions(options) {
     headers: new Headers([["Content-Type", "application/json"]]),
     body: typeof body === "string" ? body : JSON.stringify(body),
   });
-  if (response.status == 200) {
+  if (response.status === 200) {
     const text = await response.text();
     const obj = JSON.parse(text, ["message", "content"]);
     return obj.message.content;
-  } else {
-    const obj = await response.json();
-    throw new APIError(response.status, response.statusText, obj);
   }
+  const obj = await response.json();
+  throw new APIError(response.status, response.statusText, obj);
 }
 
 class APIError extends Error {

@@ -14,7 +14,7 @@ function completions(options) {
           body: JSON.stringify(body),
         });
 
-        if (response.status == 200) {
+        if (response.status === 200) {
           const transformedBody = response.body.pipeThrough(
             new TextDecoderStream(),
           );

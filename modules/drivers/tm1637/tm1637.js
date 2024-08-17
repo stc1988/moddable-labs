@@ -17,7 +17,7 @@ class TM1637 {
   configure(options) {
     if ("brightness" in options) {
       const brightness = options.brightness;
-      if (typeof brightness != "number" || brightness < 0 || 7 < brightness)
+      if (typeof brightness !== "number" || brightness < 0 || 7 < brightness)
         throw new RangeError();
       this.#brightness = brightness;
     }
@@ -90,7 +90,7 @@ class TM1637 {
       segments[DIGITS - i - 1] = this.#charToSegments(
         string[string.length - i - 1],
       );
-      if (i == 2 && options.colon) segments[DIGITS - i - 1] += 0x80;
+      if (i === 2 && options.colon) segments[DIGITS - i - 1] += 0x80;
     }
 
     return segments;

@@ -7,10 +7,7 @@ const model = "gemini-1.5-flash-latest";
 
 try {
   let audio = new Uint8Array(new Resource("profile.png"));
-  const body =
-    '{"contents":[{"parts":[{"inlineData":{"mimeType":"image/png","data":"' +
-    audio.toBase64() +
-    '"}}]}],"systemInstruction": {"parts": [{ "text": "Must answer within 3 sentenses." }],}}';
+  const body = `{"contents":[{"parts":[{"inlineData":{"mimeType":"image/png","data":"${audio.toBase64()}"}}]}],"systemInstruction":·{"parts":·[{·"text":·"Must·answer·within·3·sentenses."·}],}}`;
 
   audio = null;
 
