@@ -7,7 +7,9 @@
     "example": "examples"
   },
   "scripts": {
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "lint": "biome lint --write",
+    "check": "biome check"
   },
   "author": "",
   "license": "ISC",

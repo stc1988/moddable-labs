@@ -1,7 +1,7 @@
 import EventSource from "eventsource";
 import Headers from "headers";
 import * as streams from "streams";
-for (let key in streams) globalThis[key] = streams[key];
+for (const key in streams) globalThis[key] = streams[key];
 
 // API specification: https://docs.anthropic.com/en/api/messages
 
@@ -19,17 +19,17 @@ function completions(options) {
         ]),
         body: typeof body === "string" ? body : JSON.stringify(body),
       });
-      source.addEventListener("content_block_delta", function (e) {
+      source.addEventListener("content_block_delta", (e) => {
         const obj = JSON.parse(e.data, ["delta", "text"]);
         controller.enqueue(obj.delta.text);
       });
 
-      source.addEventListener("message_stop", function (e) {
+      source.addEventListener("message_stop", (e) => {
         source.close();
         controller.close();
       });
 
-      source.onerror = function (error) {
+      source.onerror = (error) => {
         source.close();
         controller.error(new APIError(error.status, error.statusText));
       };

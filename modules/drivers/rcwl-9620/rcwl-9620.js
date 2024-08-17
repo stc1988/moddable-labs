@@ -37,7 +37,7 @@ class RCWL9620 {
     Timer.delay(200);
 
     io.read(vBuf);
-    let distance = ((vBuf[0] << 16) | (vBuf[1] << 8) | vBuf[2]) / 1000;
+    const distance = ((vBuf[0] << 16) | (vBuf[1] << 8) | vBuf[2]) / 1000;
 
     if (distance > MAX_RANGE) {
       return MAX_RANGE;

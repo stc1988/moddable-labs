@@ -1,7 +1,7 @@
 import EventSource from "eventsource";
 import Headers from "headers";
 import * as streams from "streams";
-for (let key in streams) globalThis[key] = streams[key];
+for (const key in streams) globalThis[key] = streams[key];
 
 // API specification: https://platform.openai.com/docs/guides/text-generation/chat-completions-api
 
@@ -21,7 +21,7 @@ function completions(options) {
           body: typeof body === "string" ? body : JSON.stringify(body),
         },
       );
-      source.onmessage = function (e) {
+      source.onmessage = (e) => {
         if (e.data == "[DONE]") {
           source.close();
           controller.close();
@@ -30,7 +30,7 @@ function completions(options) {
           controller.enqueue(obj.choices[0].delta.content);
         }
       };
-      source.onerror = function (error) {
+      source.onerror = (error) => {
         source.close();
         controller.error(new APIError(error.status, error.statusText));
       };

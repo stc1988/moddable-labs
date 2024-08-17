@@ -7,7 +7,7 @@ const model = "gemini-1.5-flash-latest";
 
 try {
   let audio = new Uint8Array(new Resource("speech.wav"));
-  let body =
+  const body =
     '{"contents":[{"parts":[{"inlineData":{"mimeType":"audio/wav","data":"' +
     audio.toBase64() +
     '"}}]}],"systemInstruction": {"parts": [{ "text": "Must answer within 3 sentenses." }],}}';

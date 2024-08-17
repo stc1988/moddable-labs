@@ -77,12 +77,12 @@ class TM1637 {
     }
   }
   #stringToSegments(string, dictionary) {
-    let options = {
+    const options = {
       colon: false,
       leading_zeros: false,
       ...dictionary,
     };
-    let segments = new Array(DIGITS);
+    const segments = new Array(DIGITS);
     if (options.leading_zeros) {
       string += string.padStart(DIGITS, "0");
     }
@@ -112,11 +112,11 @@ class TM1637 {
     this.#stop();
   }
   number(number, dictionary) {
-    let segments = this.#stringToSegments(number.toString(10), dictionary);
+    const segments = this.#stringToSegments(number.toString(10), dictionary);
     this.write(segments);
   }
   hex(hex, dictionary) {
-    let segments = this.#stringToSegments(hex.toString(16), dictionary);
+    const segments = this.#stringToSegments(hex.toString(16), dictionary);
     this.write(segments);
   }
   clear() {
@@ -135,7 +135,7 @@ class TM1637 {
     this.#diopin.write(1);
   }
   #writeByte(byte) {
-    let data = byte;
+    const data = byte;
 
     for (let i = 0; i < 8; i++) {
       this.#clkpin.write(0);

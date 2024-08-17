@@ -3,7 +3,7 @@ import Resource from "Resource";
 import completions from "completions";
 
 const apiKey = config.api_key;
-let image = new Uint8Array(new Resource("profile.png"));
+const image = new Uint8Array(new Resource("profile.png"));
 
 try {
   const chatCompletion = await completions({

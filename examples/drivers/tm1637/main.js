@@ -1,7 +1,7 @@
 import TM1637 from "tm1637";
 import Timer from "timer";
 
-let tm1637 = new TM1637({ pin: { clk: 22, dio: 21 }, brightness: 7 });
+const tm1637 = new TM1637({ pin: { clk: 22, dio: 21 }, brightness: 7 });
 
 // write
 tm1637.write([0x7f, 0xff, 0x7f, 0x7f]); // 88:88
@@ -71,7 +71,7 @@ Timer.delay(500);
 // count time sample
 let count = 0;
 Timer.repeat(() => {
-  let disp = Math.floor(count / 60) * 100 + (count % 60);
+  const disp = Math.floor(count / 60) * 100 + (count % 60);
   tm1637.number(disp, { colon: true, leading_zeros: true });
   count++;
 }, 1000);
