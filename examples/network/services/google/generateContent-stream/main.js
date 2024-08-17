@@ -15,10 +15,10 @@ function completions(body) {
             method: "POST",
             headers: new Headers([["Content-Type", "application/json"]]),
             body: JSON.stringify(body),
-          }
+          },
         );
         const transformedBody = response.body.pipeThrough(
-          new TextDecoderStream()
+          new TextDecoderStream(),
         );
         const reader = transformedBody.getReader();
 

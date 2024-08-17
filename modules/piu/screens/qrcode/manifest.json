@@ -1,13 +1,9 @@
 {
-	"include": [
-		"$(MODDABLE)/modules/piu/MC/qrcode/manifest.json"
-	],
-	"modules": {
-		"*":[ "./*", "../../behaviors/behaviors"]
-	},
-	"resources":{
-		"*-mask": [
-			"$(MODDABLE)/examples/assets/fonts/OpenSans-Regular-24"
-		]
-	}
+  "include": ["$(MODDABLE)/modules/piu/MC/qrcode/manifest.json"],
+  "modules": {
+    "*": ["./*", "../../behaviors/behaviors"]
+  },
+  "resources": {
+    "*-mask": ["$(MODDABLE)/examples/assets/fonts/OpenSans-Regular-24"]
+  }
 }

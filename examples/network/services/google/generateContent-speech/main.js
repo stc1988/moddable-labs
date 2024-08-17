@@ -6,19 +6,18 @@ const apiKey = config.api_key;
 const model = "gemini-1.5-flash-latest";
 
 try {
-
   let audio = new Uint8Array(new Resource("speech.wav"));
   let body =
     '{"contents":[{"parts":[{"inlineData":{"mimeType":"audio/wav","data":"' +
     audio.toBase64() +
     '"}}]}],"systemInstruction": {"parts": [{ "text": "Must answer within 3 sentenses." }],}}';
-  
+
   audio = null;
 
   const chatCompletion = await completions({
     apiKey,
     model,
-    body
+    body,
   });
 
   trace(`${chatCompletion}\n`);

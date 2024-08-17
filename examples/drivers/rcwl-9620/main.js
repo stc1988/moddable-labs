@@ -1,4 +1,3 @@
-
 import Distance from "embedded:sensor/Ultrasonic-Distance/RCWL9620";
 import Timer from "timer";
 

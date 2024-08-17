@@ -18,7 +18,7 @@ async function main() {
       trace(chunk);
     }
   } catch (error) {
-    debugger
+    debugger;
     trace(`API Error: ${error.status} - ${error.statusText}`);
   }
 }

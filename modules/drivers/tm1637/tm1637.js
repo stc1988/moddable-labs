@@ -15,13 +15,12 @@ class TM1637 {
     this.#diopin = new Digital({ pin: options.pin.dio, mode: Digital.Output });
   }
   configure(options) {
-    if("brightness" in options) {
+    if ("brightness" in options) {
       const brightness = options.brightness;
-      if(typeof brightness != "number" || brightness < 0 || 7 < brightness )
-        throw new RangeError;
+      if (typeof brightness != "number" || brightness < 0 || 7 < brightness)
+        throw new RangeError();
       this.#brightness = brightness;
     }
-
   }
   #charToSegments(char) {
     switch (char) {
@@ -89,7 +88,7 @@ class TM1637 {
     }
     for (let i = 0; i < DIGITS; i++) {
       segments[DIGITS - i - 1] = this.#charToSegments(
-        string[string.length - i - 1]
+        string[string.length - i - 1],
       );
       if (i == 2 && options.colon) segments[DIGITS - i - 1] += 0x80;
     }

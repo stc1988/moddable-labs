@@ -12,17 +12,20 @@ try {
       model: "claude-3-haiku-20240307",
       max_tokens: 1024,
       messages: [
-        { role: "user", content: [
-          {
-            "type": "image",
-            "source": {
-              "type": "base64",
-              "media_type": "image/png",
-              "data": image.toBase64(),
-            }
-          },
-          {"type": "text", "text": "What is in this image?"}
-        ] },
+        {
+          role: "user",
+          content: [
+            {
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: "image/png",
+                data: image.toBase64(),
+              },
+            },
+            { type: "text", text: "What is in this image?" },
+          ],
+        },
       ],
     },
   });

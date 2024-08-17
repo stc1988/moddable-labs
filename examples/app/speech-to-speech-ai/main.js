@@ -17,7 +17,7 @@ async function completions(body) {
       method: "POST",
       headers: new Headers([["Content-Type", "application/json"]]),
       body: body,
-    }
+    },
   );
   const json = await response.json();
   return json.candidates[0].content.parts[0].text;

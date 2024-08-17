@@ -15,7 +15,7 @@ async function completions(options) {
     const obj = JSON.parse(text, ["message", "content"]);
     return obj.message.content;
   } else {
-    const obj = await response.json()
+    const obj = await response.json();
     throw new APIError(response.status, response.statusText, obj);
   }
 }

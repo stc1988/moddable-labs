@@ -16,7 +16,7 @@ class WifiApConnectQRcodeBehavior extends Behavior {
       new QrCodeScreen({
         string: qrString,
         labels: ["Wifi-setting", "Scan QR Code"],
-      })
+      }),
     );
   }
 }

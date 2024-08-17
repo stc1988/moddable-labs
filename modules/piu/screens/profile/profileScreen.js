@@ -18,17 +18,17 @@ class ProfileScreenBehavior extends BaseScreenBehavior {
         width: 150,
         height: 150,
         path: this.data.path,
-      })
+      }),
     );
     if (data.labels) {
-      const options = data.width > data.height ? { left: 20 }:  { top: 20 }
+      const options = data.width > data.height ? { left: 20 } : { top: 20 };
       const column = new Column(null, options);
       for (const label of data.labels) {
         column.add(
           new Label(null, {
             string: label,
             style: labelStyle,
-          })
+          }),
         );
       }
       layout.add(column);

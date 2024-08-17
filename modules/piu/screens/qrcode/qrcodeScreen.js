@@ -20,7 +20,7 @@ class QrCodeScreenBehavior extends BaseScreenBehavior {
           new Label(null, {
             string: label,
             style: labelStyle,
-          })
+          }),
         );
       }
       qrSize -= 20 * data.labels.length;
@@ -37,7 +37,7 @@ class QrCodeScreenBehavior extends BaseScreenBehavior {
         },
         string: this.data.string,
         maxVersion: 10,
-      })
+      }),
     );
 
     container.add(column);

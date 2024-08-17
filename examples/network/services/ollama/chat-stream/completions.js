@@ -16,7 +16,7 @@ function completions(options) {
 
         if (response.status == 200) {
           const transformedBody = response.body.pipeThrough(
-            new TextDecoderStream()
+            new TextDecoderStream(),
           );
           const reader = transformedBody.getReader();
 
@@ -43,7 +43,7 @@ function completions(options) {
         } else {
           const obj = await response.json();
           controller.error(
-            new APIError(response.status, response.statusText, obj)
+            new APIError(response.status, response.statusText, obj),
           );
         }
       } catch (error) {

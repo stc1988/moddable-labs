@@ -7,9 +7,7 @@
   ],
   "modules": {
     "*": ["./main", "$(MODULES)/pins/audioin/*"],
-    "pins/*": [
-			"$(MODULES)/pins/i2s/*"
-		]
+    "pins/*": ["$(MODULES)/pins/i2s/*"]
   },
   "defines": {
     "audioIn": {
@@ -17,11 +15,11 @@
       "bitsPerSample": 16
     },
     "audioOut": {
-			"bitsPerSample": 16,
-			"numChannels": 1,
-			"sampleRate": 44100,
-			"queueLength": 12
-		}
+      "bitsPerSample": 16,
+      "numChannels": 1,
+      "sampleRate": 44100,
+      "queueLength": 12
+    }
   },
   "data": {
     "*": ["$(MODULES)/crypt/data/ca233"]

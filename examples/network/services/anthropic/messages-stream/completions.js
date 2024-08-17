@@ -7,7 +7,7 @@ for (let key in streams) globalThis[key] = streams[key];
 
 function completions(options) {
   const { apiKey, body, ...o } = options;
-  
+
   return new ReadableStream({
     start(controller) {
       const source = new EventSource("https://api.anthropic.com/v1/messages", {
@@ -29,7 +29,7 @@ function completions(options) {
         controller.close();
       });
 
-      source.onerror = function(error) {
+      source.onerror = function (error) {
         source.close();
         controller.error(new APIError(error.status, error.statusText));
       };
@@ -46,4 +46,3 @@ class APIError extends Error {
   }
 }
 export default completions;
-

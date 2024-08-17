@@ -7,7 +7,10 @@
     "*": "./main"
   },
   "data": {
-    "*": ["$(MODULES)/crypt/data/ca236","../../../../../examples/piu/screens/assets/profile"]
+    "*": [
+      "$(MODULES)/crypt/data/ca236",
+      "../../../../../examples/piu/screens/assets/profile"
+    ]
   },
   "defines": {
     "main": {
