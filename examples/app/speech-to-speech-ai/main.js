@@ -8,7 +8,6 @@ import ElevenLabsStreamer from "elevenlabsstreamer";
 const googleApiKey = config.google_api_key;
 const model = "gemini-1.5-flash-latest";
 const elevenLabsApiKey = config.elevenlabs_api_key;
-debugger;
 
 async function completions(body) {
   const response = await fetch(
@@ -27,7 +26,7 @@ async function recordSamples(audioin, durationSec) {
   const readingsPerSecond = 8;
   const sampleCount = Math.floor(audioin.sampleRate / readingsPerSecond);
   let samplesRemaining = durationSec * audioin.sampleRate;
-  let samples = [];
+  const samples = [];
 
   return new Promise((resolve) => {
     Timer.repeat((id) => {
@@ -73,7 +72,7 @@ async function recordWav(durationSec) {
 
   const byteRate = sampleRate * numChannels * (bitsPerSample >> 3);
   const contentLength = durationSec * byteRate;
-  let view = new DataView(new ArrayBuffer(44 + contentLength));
+  const view = new DataView(new ArrayBuffer(44 + contentLength));
 
   // header
   view.setUint8(0, "R".charCodeAt());
@@ -116,7 +115,7 @@ async function recordWav(durationSec) {
 
 async function main() {
   let audio = await recordWav(3);
-  let body =
+  const body =
     '{"contents":[{"parts":[{"inlineData":{"mimeType":"audio/wav","data":"' +
     audio.toBase64() +
     '"}}]}],"systemInstruction":{"parts":[{"text":"Must answer within 3 sentenses."}]}}';

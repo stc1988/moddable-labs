@@ -32,6 +32,5 @@ try {
 
   trace(`${chatCompletion}\n`);
 } catch (error) {
-  debugger;
   trace(`API Error: ${error.status} - ${error.statusText}`);
 }
