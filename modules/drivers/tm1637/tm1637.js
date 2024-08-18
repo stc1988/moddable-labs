@@ -82,13 +82,14 @@ class TM1637 {
       leading_zeros: false,
       ...dictionary,
     };
+    let segStr = string;
     const segments = new Array(DIGITS);
     if (options.leading_zeros) {
-      string += string.padStart(DIGITS, "0");
+      segStr += segStr.padStart(DIGITS, "0");
     }
     for (let i = 0; i < DIGITS; i++) {
       segments[DIGITS - i - 1] = this.#charToSegments(
-        string[string.length - i - 1],
+        segStr[segStr.length - i - 1],
       );
       if (i === 2 && options.colon) segments[DIGITS - i - 1] += 0x80;
     }

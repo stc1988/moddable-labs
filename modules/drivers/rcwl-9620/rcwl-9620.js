@@ -14,6 +14,7 @@ class RCWL9620 {
   #onError;
 
   constructor(options) {
+    // biome-ignore lint: Moddable way
     const io = (this.#io = new options.sensor.io({
       address: 0x57,
       hz: 100000,
