@@ -1,26 +1,13 @@
 import AudioIn from "audioin";
 import Timer from "timer";
 import config from "mc/config";
-import { fetch, Headers } from "fetch";
+import completions from "completions";
 import AudioOut from "pins/audioout";
 import ElevenLabsStreamer from "elevenlabsstreamer";
 
 const googleApiKey = config.google_api_key;
 const model = "gemini-1.5-flash-latest";
 const elevenLabsApiKey = config.elevenlabs_api_key;
-
-async function completions(body) {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${googleApiKey}`,
-    {
-      method: "POST",
-      headers: new Headers([["Content-Type", "application/json"]]),
-      body: body,
-    },
-  );
-  const json = await response.json();
-  return json.candidates[0].content.parts[0].text;
-}
 
 async function recordSamples(audioin, durationSec) {
   const readingsPerSecond = 8;
@@ -103,21 +90,28 @@ async function recordWav(durationSec) {
 
   // contents
   let offset = 44;
-  for (const s in sampleRate) {
+  samples.forEach((s) => {
     for (let i = 0; i < s.length; i++) {
       view.setInt16(offset, s[i], true);
       offset += 2;
     }
-  }
+  });
   samples = null;
   return new Uint8Array(view.buffer);
 }
 
 async function main() {
   let audio = await recordWav(3);
-  const body = `{"contents":[{"parts":[{"inlineData":{"mimeType":"audio/wav","data":"${audio.toBase64()}"}}]}],"systemInstruction":{"parts":[{"text":"Must·answer·within·3·sentenses."}]}}`;
+  const body =
+    '{"contents":[{"parts":[{"inlineData":{"mimeType":"audio/wav","data":"' +
+    audio.toBase64() +
+    '"}}]}],"systemInstruction":{"parts":[{"text":"Must answer within 3 sentenses."}]}}';
   audio = null;
-  const chatCompletion = await completions(body);
+  const chatCompletion = await completions({
+    apiKey: googleApiKey,
+    model,
+    body,
+  });
 
   trace(`${chatCompletion}\n`);
   speechText(chatCompletion);

@@ -2,7 +2,7 @@
   "include": [
     "$(MODDABLE)/examples/manifest_base.json",
     "$(MODDABLE)/examples/manifest_net.json",
-    "$(MODDABLE)/examples/io/tcp/fetch/manifest_fetch.json",
+    "../../network/services/google/generateContent/manifest_completions.json",
     "$(MODDABLE)/examples/pins/audioout/elevenlabs-stream/manifest_elevenlabsstreamer.json"
   ],
   "modules": {
@@ -20,9 +20,6 @@
       "sampleRate": 44100,
       "queueLength": 12
     }
-  },
-  "data": {
-    "*": ["$(MODULES)/crypt/data/ca233"]
   },
   "creation": {
     "static": 442368,
