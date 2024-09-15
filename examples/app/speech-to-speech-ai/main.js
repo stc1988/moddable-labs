@@ -52,7 +52,7 @@ function speechText(text) {
   });
 }
 
-async function recordWav(durationSec) {
+async function recordWav(durationSec = 3) {
   const audioin = new AudioIn();
   const { sampleRate, numChannels, bitsPerSample } = audioin;
   let samples = await recordSamples(audioin, durationSec);
@@ -101,17 +101,18 @@ async function recordWav(durationSec) {
 }
 
 async function main() {
-  let audio = await recordWav(3);
-  const body =
+  let audio = await recordWav();
+  let body =
     '{"contents":[{"parts":[{"inlineData":{"mimeType":"audio/wav","data":"' +
     audio.toBase64() +
     '"}}]}],"systemInstruction":{"parts":[{"text":"Must answer within 3 sentenses."}]}}';
-  audio = null;
+  audio = undefined;
   const chatCompletion = await completions({
     apiKey: googleApiKey,
     model,
     body,
   });
+  body = undefined
 
   trace(`${chatCompletion}\n`);
   speechText(chatCompletion);
