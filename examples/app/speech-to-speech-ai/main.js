@@ -9,27 +9,6 @@ const googleApiKey = config.google_api_key;
 const model = "gemini-1.5-flash-latest";
 const elevenLabsApiKey = config.elevenlabs_api_key;
 
-async function recordSamples(audioin, durationSec) {
-  const readingsPerSecond = 8;
-  const sampleCount = Math.floor(audioin.sampleRate / readingsPerSecond);
-  let samplesRemaining = durationSec * audioin.sampleRate;
-  const samples = [];
-
-  return new Promise((resolve) => {
-    Timer.repeat((id) => {
-      const s = new Int16Array(audioin.read(sampleCount));
-      samples.push(s);
-
-      samplesRemaining -= sampleCount;
-      trace(`${samplesRemaining}\n`);
-      if (samplesRemaining <= 0) {
-        Timer.clear(id);
-        resolve(samples);
-      }
-    }, 1000 / readingsPerSecond);
-  });
-}
-
 function speechText(text) {
   const audio = new AudioOut({});
   audio.start();
@@ -49,6 +28,27 @@ function speechText(text) {
       trace("ElevenLabs Done\n");
       this.close();
     },
+  });
+}
+
+async function recordSamples(audioin, durationSec) {
+  const readingsPerSecond = 8;
+  const sampleCount = Math.floor(audioin.sampleRate / readingsPerSecond);
+  let samplesRemaining = durationSec * audioin.sampleRate;
+  const samples = [];
+
+  return new Promise((resolve) => {
+    Timer.repeat((id) => {
+      const s = new Int16Array(audioin.read(sampleCount));
+      samples.push(s);
+
+      samplesRemaining -= sampleCount;
+      trace(`${samplesRemaining}\n`);
+      if (samplesRemaining <= 0) {
+        Timer.clear(id);
+        resolve(samples);
+      }
+    }, 1000 / readingsPerSecond);
   });
 }
 
