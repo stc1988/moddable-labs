@@ -31,22 +31,25 @@ function speechText(text) {
   });
 }
 
-async function recordSamples(audioin, durationSec) {
+async function recordSamples(audioin, durationSec, view) {
   const readingsPerSecond = 8;
   const sampleCount = Math.floor(audioin.sampleRate / readingsPerSecond);
   let samplesRemaining = durationSec * audioin.sampleRate;
-  const samples = [];
 
   return new Promise((resolve) => {
+    let offset = 44;
     Timer.repeat((id) => {
-      const s = new Int16Array(audioin.read(sampleCount));
-      samples.push(s);
+      const samples = new Int16Array(audioin.read(sampleCount));
+      for (let i = 0; i < samples.length; i++) {
+        view.setInt16(offset, samples[i], true);
+        offset += 2;
+      }
 
       samplesRemaining -= sampleCount;
       trace(`${samplesRemaining}\n`);
       if (samplesRemaining <= 0) {
         Timer.clear(id);
-        resolve(samples);
+        resolve();
       }
     }, 1000 / readingsPerSecond);
   });
@@ -55,8 +58,6 @@ async function recordSamples(audioin, durationSec) {
 async function recordWav(durationSec = 3) {
   const audioin = new AudioIn();
   const { sampleRate, numChannels, bitsPerSample } = audioin;
-  let samples = await recordSamples(audioin, durationSec);
-
   const byteRate = sampleRate * numChannels * (bitsPerSample >> 3);
   const contentLength = durationSec * byteRate;
   const view = new DataView(new ArrayBuffer(44 + contentLength));
@@ -88,15 +89,8 @@ async function recordWav(durationSec = 3) {
   view.setUint8(39, "a".charCodeAt());
   view.setUint32(40, contentLength, true);
 
-  // contents
-  let offset = 44;
-  samples.forEach((s) => {
-    for (let i = 0; i < s.length; i++) {
-      view.setInt16(offset, s[i], true);
-      offset += 2;
-    }
-  });
-  samples = null;
+  await recordSamples(audioin, durationSec, view);
+
   return new Uint8Array(view.buffer);
 }
 
@@ -112,7 +106,7 @@ async function main() {
     model,
     body,
   });
-  body = undefined
+  body = undefined;
 
   trace(`${chatCompletion}\n`);
   speechText(chatCompletion);

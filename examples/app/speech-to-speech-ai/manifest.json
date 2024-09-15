@@ -38,11 +38,10 @@
     "elevenlabs_api_key": "YOUR-API-KE"
   },
   "platforms": {
-    "esp32/*": {
-    },
+    "esp32/*": {},
     "...": {
-      "config":{
-        "audioInWave":"speech.wav"
+      "config": {
+        "audioInWave": "speech.wav"
       },
       "data": {
         "speech": "../../assets/sound/speech2.wav"
