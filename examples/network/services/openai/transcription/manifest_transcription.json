@@ -1,0 +1,14 @@
+{
+  "include": [
+    "$(MODDABLE)/examples/manifest_net.json",
+    "$(MODDABLE)/modules/base/uuid/manifest.json",
+    "$(MODDABLE)/examples/io/tcp/fetch/manifest_fetch.json"
+  ],
+  "modules": {
+    "*": "./transcription"
+  },
+  "preload": "transcription",
+  "data": {
+    "*": ["$(MODDABLE)/modules/crypt/data/ca236"]
+  }
+}
