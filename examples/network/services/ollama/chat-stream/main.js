@@ -8,7 +8,7 @@ async function main() {
     const stream = completions({
       host,
       body: {
-        model: "llama3",
+        model: "llama3.2",
         stream: true,
         messages: [{ role: "user", content: "why is the sky blue in short?" }],
       },

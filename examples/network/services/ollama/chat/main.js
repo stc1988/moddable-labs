@@ -9,7 +9,7 @@ try {
   const chatCompletion = await completions({
     host,
     body: {
-      model: "llama3",
+      model: "llama3.2",
       stream: false,
       messages: [{ role: "user", content: "why is the sky blue in short?" }],
     },
