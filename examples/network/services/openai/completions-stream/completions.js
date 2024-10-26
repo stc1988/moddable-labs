@@ -6,18 +6,17 @@ for (const key in streams) globalThis[key] = streams[key];
 // API specification: https://platform.openai.com/docs/guides/text-generation/chat-completions-api
 
 function completions(options) {
-  const { apiKey, body, ...o } = options;
+  const { baseURL, apiKey, body, ...o } = options;
+  const headers = new Headers([["Content-Type", "application/json"]]);
+  if (apiKey) headers.set("Authorization", `Bearer ${apiKey}`);
 
   return new ReadableStream({
     start(controller) {
       const source = new EventSource(
-        "https://api.openai.com/v1/chat/completions",
+        `${baseURL ?? "https://api.openai.com/v1/"}/chat/completions`,
         {
           method: "POST",
-          headers: new Headers([
-            ["Content-Type", "application/json"],
-            ["Authorization", `Bearer ${apiKey}`],
-          ]),
+          headers,
           body: typeof body === "string" ? body : JSON.stringify(body),
         },
       );
