@@ -1,13 +1,13 @@
 import config from "mc/config";
 import completions from "completions";
 
-// API specification: https://github.com/ollama/ollama/blob/main/docs/api.md
+// API specification: https://ollama.com/blog/openai-compatibility
 
-const host = config.host;
+const baseURL = config.base_url;
 
 try {
   const chatCompletion = await completions({
-    host,
+    baseURL,
     body: {
       model: "llama3.2",
       stream: false,

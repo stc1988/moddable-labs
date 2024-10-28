@@ -1,12 +1,12 @@
 import config from "mc/config";
 import completions from "completions";
 
-const host = config.host;
+const baseURL = config.base_url;
 
 async function main() {
   try {
     const stream = completions({
-      host,
+      baseURL,
       body: {
         model: "llama3.2",
         stream: true,

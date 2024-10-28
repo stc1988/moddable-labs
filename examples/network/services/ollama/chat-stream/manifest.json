@@ -1,7 +1,7 @@
 {
   "include": [
     "$(MODDABLE)/examples/manifest_base.json",
-    "./manifest_completions.json"
+    "../../openai/completions-stream/manifest_completions.json"
   ],
   "modules": {
     "*": ["./main"]
@@ -10,6 +10,6 @@
     "stack": 1024
   },
   "config": {
-    "host": "http://localhost:11434"
+    "base_url": "http://localhost:11434/v1"
   }
 }
