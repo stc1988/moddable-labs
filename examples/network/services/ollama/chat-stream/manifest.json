@@ -8,8 +8,5 @@
   },
   "creation": {
     "stack": 1024
-  },
-  "config": {
-    "base_url": "http://localhost:11434/v1"
   }
 }

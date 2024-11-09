@@ -6,9 +6,10 @@ async function completions(options) {
   const { baseURL, apiKey, body, ...o } = options;
   const headers = new Headers([["Content-Type", "application/json"]]);
   if (apiKey) headers.set("Authorization", `Bearer ${apiKey}`);
+  const url = `${baseURL ?? "https://api.openai.com/v1/"}chat/completions`;
 
   const response = await fetch(
-    `${baseURL ?? "https://api.openai.com/v1/"}/chat/completions`,
+    url,
     {
       method: "POST",
       headers,

@@ -10,8 +10,5 @@
     "main": {
       "async": 1
     }
-  },
-  "config": {
-    "base_url": "http://localhost:11434/v1"
   }
 }

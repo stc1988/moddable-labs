@@ -13,7 +13,7 @@ function completions(options) {
   return new ReadableStream({
     start(controller) {
       const source = new EventSource(
-        `${baseURL ?? "https://api.openai.com/v1/"}/chat/completions`,
+        `${baseURL ?? "https://api.openai.com/v1/"}chat/completions`,
         {
           method: "POST",
           headers,
