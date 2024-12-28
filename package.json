@@ -15,6 +15,6 @@
   "license": "ISC",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@moddable/typings": "^5.0.1"
+    "@moddable/typings": "^5.3.0"
   }
 }
