@@ -11,8 +11,7 @@
   "main": "dist/main.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "esbuild": "esbuild src/main.ts --bundle --outfile=dist/main.js",
+    "build": "tsc && esbuild lib/valibot/index.js --bundle --minify --tree-shaking=true  --format=esm --outfile=dist/lib/valibot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

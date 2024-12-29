@@ -12,4 +12,4 @@ type LoginData = InferOutput<typeof LoginSchema>; // { email: string; password: 
 
 
 const a = parse(LoginSchema, { email: 'jane@example.com', password: '12345678' });
-console.log(JSON.stringify(a))
+trace(JSON.stringify(a))
