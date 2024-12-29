@@ -1,6 +1,6 @@
 {
   "include": "$(MODDABLE)/examples/manifest_base.json",
   "modules": {
-    "*": ["./dist/main", "./dist/lib/valibot"]
+    "*": ["./build/main", "./build/lib/valibot"]
   }
 }
