@@ -8,10 +8,10 @@
     "@moddable/typings": "^5.3.0",
     "esbuild": "0.24.2"
   },
-  "main": "dist/main.js",
+  "main": "build/main.js",
   "type": "module",
   "scripts": {
-    "build": "tsc && esbuild lib/valibot/index.js --bundle --minify --tree-shaking=true  --format=esm --outfile=dist/lib/valibot.js",
+    "build": "tsc && esbuild src/lib/valibot/index.js --bundle --minify --tree-shaking=true  --format=esm --outfile=build/lib/valibot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

@@ -3,12 +3,12 @@
         "strict": true,
         "moduleResolution": "node",
         "incremental": true,
-        "outDir": "dist",
+        "outDir": "build",
         "lib": [
             "es2022"
         ],
         "module": "es2022",
-        "sourceMap": true,
+        "sourceMap": false,
         "target": "ES2022",
         "baseUrl": ".",
         "paths": {
@@ -25,5 +25,8 @@
     },
     "include": [
         "src/**/*.ts"
+    ],
+    "exclude": [
+        "src/lib/**/*"
     ]
 }
