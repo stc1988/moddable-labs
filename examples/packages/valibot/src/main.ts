@@ -1,15 +1,15 @@
-import {object, string, email, pipe, minLength, InferOutput, parse} from 'valibot';
+import * as v from 'valibot';
 
-const LoginSchema = object({
-    email: pipe(string(), email()),
-    password: pipe(string(),minLength(8)),
+const LoginSchema = v.object({
+    email: v.pipe(v.string(), v.email()),
+    password: v.pipe(v.string(),v.minLength(8)),
   });
 
-type LoginData = InferOutput<typeof LoginSchema>; // { email: string; password: string }
+type LoginData = v.InferOutput<typeof LoginSchema>; // { email: string; password: string }
 
 
 // v.parse(LoginSchema, { email: '', password: '' });
 
 
-const a = parse(LoginSchema, { email: 'jane@example.com', password: '12345678' });
+const a = v.parse(LoginSchema, { email: 'jane@example.com', password: '12345678' });
 trace(JSON.stringify(a))
