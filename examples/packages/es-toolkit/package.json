@@ -1,0 +1,20 @@
+{
+  "name": "es-toolkit",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@moddable/typings": "^5.3.0",
+    "esbuild": "0.24.2",
+    "typescript": "^5.7.2"
+  },
+  "main": "build/main.js",
+  "type": "module",
+  "scripts": {
+    "build": "node esbuild.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "es-toolkit": "^1.31.0"
+  }
+}
