@@ -1,6 +1,8 @@
 {
   "include": "$(MODDABLE)/examples/manifest_base.json",
   "modules": {
-    "*": ["./build/main", "./build/lib/date-fns"]
-  }
+    "*": ["./build/main"],
+    "date-fns": ["./build/lib/date-fns"]
+  },
+  "preload": ["date-fns"]
 }

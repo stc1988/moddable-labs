@@ -1,6 +1,8 @@
 {
   "include": "$(MODDABLE)/examples/manifest_base.json",
   "modules": {
-    "*": ["./build/main", "./build/lib/es-toolkit"]
-  }
+    "*": ["./build/main"],
+    "es-toolkit": ["./build/lib/es-toolkit"]
+  },
+  "preload": ["es-toolkit"]
 }
