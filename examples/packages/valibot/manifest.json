@@ -1,6 +1,8 @@
 {
   "include": "$(MODDABLE)/examples/manifest_base.json",
   "modules": {
-    "*": ["./build/main", "./build/lib/valibot"]
-  }
+    "*": ["./build/*"],
+    "valibot": ["./build/lib/valibot"]
+  },
+  "preload": ["valibot"]
 }
