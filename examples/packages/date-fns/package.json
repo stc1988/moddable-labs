@@ -1,0 +1,20 @@
+{
+  "name": "date-fns",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@moddable/typings": "^5.3.0",
+    "esbuild": "0.24.2"
+  },
+  "main": "build/main.js",
+  "type": "module",
+  "scripts": {
+    "build": "node esbuild.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "date-fns": "^4.1.0",
+    "typescript": "^5.7.2"
+  }
+}
