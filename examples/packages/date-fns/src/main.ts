@@ -1,6 +1,6 @@
 import { compareAsc, format } from "date-fns";
 
-trace(format(new Date(2014, 1, 11), "yyyy-MM-dd") + "\n");
+trace(`${format(new Date(2014, 1, 11), "yyyy-MM-dd")}\n`);
 
 const dates = [
   new Date(1995, 6, 2),
@@ -9,6 +9,6 @@ const dates = [
 ];
 const sorted = dates.sort(compareAsc);
 
-for (const d of dates) {
+for (const d of sorted) {
   trace(`${format(d, "yyyy-MM-dd")}\n`);
 }

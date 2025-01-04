@@ -9,8 +9,7 @@ async function transcription(options) {
   const language = options.language ?? "ja";
 
   const boundary =
-    "--------------------------" +
-    `${UUID().replaceAll("-", "").substring(0, 22)}`;
+    `--------------------------${UUID().replaceAll("-", "").substring(0, 22)}`;
   const header =
     `--${boundary}\r\n` +
     `Content-Disposition: form-data; name="model"\r\n\r\n${model}\r\n` +
@@ -48,7 +47,6 @@ async function transcription(options) {
     return obj.text;
   }
   const obj = await response.json();
-  debugger;
   throw new APIError(response.status, response.statusText, obj);
 }
 
