@@ -4,7 +4,7 @@ import Resource from "Resource";
 
 const apiKey = config.api_key;
 
-let audio = new Resource("speech2.wav");
+const audio = new Resource("speech2.wav");
 
 try {
   const audioTranscription = await transcription({

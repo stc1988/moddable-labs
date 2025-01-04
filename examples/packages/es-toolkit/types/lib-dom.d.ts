@@ -1,6 +1,5 @@
+type Blob = {}
 
-interface Blob {}
+type File = {}
 
-interface File {}
-
-interface AbortSignal {}
+type AbortSignal = {}

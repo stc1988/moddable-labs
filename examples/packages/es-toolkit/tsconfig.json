@@ -1,32 +1,23 @@
 {
-    "compilerOptions": {
-        "strict": true,
-        "moduleResolution": "node",
-        "incremental": true,
-        "outDir": "build",
-        "lib": [
-            "es2022"
-        ],
-        "module": "es2022",
-        "sourceMap": false,
-        "target": "ES2022",
-        "baseUrl": ".",
-        "paths": {
-            "*": [
-                "*",
-                "node_modules/@moddable/typings/*"
-            ]
-        },
-        "types": [
-            "./node_modules/@moddable/typings/xs",
-            "./node_modules/@moddable/typings/mcpack",
-            "./types/lib-dom"
-        ]
+  "compilerOptions": {
+    "strict": true,
+    "moduleResolution": "node",
+    "incremental": true,
+    "outDir": "build",
+    "lib": ["es2022"],
+    "module": "es2022",
+    "sourceMap": false,
+    "target": "ES2022",
+    "baseUrl": ".",
+    "paths": {
+      "*": ["*", "node_modules/@moddable/typings/*"]
     },
-    "include": [
-        "src/**/*.ts"
-    ],
-    "exclude": [
-        "src/lib/**/*"
+    "types": [
+      "./node_modules/@moddable/typings/xs",
+      "./node_modules/@moddable/typings/mcpack",
+      "./types/lib-dom"
     ]
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/lib/**/*"]
 }

@@ -8,14 +8,11 @@ async function completions(options) {
   if (apiKey) headers.set("Authorization", `Bearer ${apiKey}`);
   const url = `${baseURL ?? "https://api.openai.com/v1/"}chat/completions`;
 
-  const response = await fetch(
-    url,
-    {
-      method: "POST",
-      headers,
-      body: typeof body === "string" ? body : JSON.stringify(body),
-    },
-  );
+  const response = await fetch(url, {
+    method: "POST",
+    headers,
+    body: typeof body === "string" ? body : JSON.stringify(body),
+  });
   if (response.status === 200) {
     const text = await response.text();
     const obj = JSON.parse(text, ["choices", "message", "content"]);

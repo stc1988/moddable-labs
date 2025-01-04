@@ -21,30 +21,34 @@ async function transcription(options) {
     "Content-Type: application/octet-stream\r\n\r\n";
   const footer = `\r\n--${boundary}--\r\n`;
 
-  const bodyView = new Uint8Array(new ArrayBuffer(header.length+audio.byteLength+ footer.length));
+  const bodyView = new Uint8Array(
+    new ArrayBuffer(header.length + audio.byteLength + footer.length),
+  );
   let offset = 0;
   bodyView.set(new Uint8Array(ArrayBuffer.fromString(header)), offset);
-  offset += header.length
+  offset += header.length;
   bodyView.set(new Uint8Array(audio), offset);
   offset += audio.byteLength;
-  bodyView.set(new Uint8Array( ArrayBuffer.fromString(footer)), offset);
+  bodyView.set(new Uint8Array(ArrayBuffer.fromString(footer)), offset);
 
-  const response = await fetch("https://api.openai.com/v1/audio/transcriptions",
-  {
-    method: "POST",
-    headers: new Headers([
-      ["Content-Type", `multipart/form-data; boundary=${boundary}`],
-      ["Authorization", `Bearer ${apiKey}`]
-    ]),
-    body: bodyView.buffer,
-  });
+  const response = await fetch(
+    "https://api.openai.com/v1/audio/transcriptions",
+    {
+      method: "POST",
+      headers: new Headers([
+        ["Content-Type", `multipart/form-data; boundary=${boundary}`],
+        ["Authorization", `Bearer ${apiKey}`],
+      ]),
+      body: bodyView.buffer,
+    },
+  );
 
   if (response.status === 200) {
     const obj = await response.json();
     return obj.text;
   }
   const obj = await response.json();
-  debugger
+  debugger;
   throw new APIError(response.status, response.statusText, obj);
 }
 
