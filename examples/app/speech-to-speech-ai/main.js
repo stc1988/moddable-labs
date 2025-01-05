@@ -97,6 +97,7 @@ async function recordWav(durationSec = 3) {
 async function main() {
   let audio = await recordWav();
   let body =
+    // biome-ignore lint: reason
     '{"contents":[{"parts":[{"inlineData":{"mimeType":"audio/wav","data":"' +
     audio.toBase64() +
     '"}}]}],"systemInstruction":{"parts":[{"text":"Must answer within 3 sentenses."}]}}';

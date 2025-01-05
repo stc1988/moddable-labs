@@ -11,6 +11,7 @@ async function transcription(options) {
   const boundary =
     `--------------------------${UUID().replaceAll("-", "").substring(0, 22)}`;
   const header =
+    // biome-ignore lint: reason
     `--${boundary}\r\n` +
     `Content-Disposition: form-data; name="model"\r\n\r\n${model}\r\n` +
     `--${boundary}\r\n` +
