@@ -9,3 +9,15 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/examples/packages/date-fns/" # Location of package manifests
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/examples/packages/es-toolkit/" # Location of package manifests
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/examples/packages/valibot" # Location of package manifests
+    schedule:
+      interval: "daily"
