@@ -13,11 +13,20 @@ updates:
     directory: "/examples/packages/date-fns/" # Location of package manifests
     schedule:
       interval: "daily"
+    ignore:
+      - dependency-name: "esbuild"
+      - dependency-name: "typescript"
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/examples/packages/es-toolkit/" # Location of package manifests
     schedule:
       interval: "daily"
+    ignore:
+      - dependency-name: "esbuild"
+      - dependency-name: "typescript"
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/examples/packages/valibot" # Location of package manifests
     schedule:
       interval: "daily"
+    ignore:
+      - dependency-name: "esbuild"
+      - dependency-name: "typescript"
