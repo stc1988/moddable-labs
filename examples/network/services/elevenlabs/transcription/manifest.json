@@ -1,0 +1,23 @@
+{
+  "include": [
+    "$(MODDABLE)/examples/manifest_base.json",
+    "../transcription/manifest_transcription.json"
+  ],
+  "modules": {
+    "*": "./main"
+  },
+  "data": {
+    "*": [
+      "$(MODULES)/crypt/data/ca233",
+      "../../../../../examples/assets/sound/speech1.wav"
+    ]
+  },
+  "defines": {
+    "main": {
+      "async": 1
+    }
+  },
+  "config": {
+    "api_key": "YOUR-API-KEY"
+  }
+}
