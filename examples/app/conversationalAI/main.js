@@ -1,14 +1,16 @@
 import ChatAudioIO from "ChatAudioIO";
 
-const stateMap = new Map([
-  [-1, "FAILED"],
-  [0, "DISCONNECTED"],
-  [1, "DISCONNECTING"],
-  [2, "CONNECTED"],
-  [3, "CONNECTING"],
-  [4, "LISTENING"],
-  [5, "SPEAKING"],
-]);
+const STATES = {
+  FAILED: -1,
+  DISCONNECTED: 0,
+  DISCONNECTING: 1,
+  CONNECTED: 2,
+  CONNECTING: 3,
+  LISTENING: 4,
+  SPEAKING: 5,
+};
+
+const stateMap = new Map(Object.entries(STATES).map(([key, value]) => [value, key]));
 
 let currentState;
 let silince = true;
