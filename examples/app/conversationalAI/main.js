@@ -38,7 +38,8 @@ const chat = new ChatAudioIO({
     currentState = s;
   },
   onInputLevelChanged: (level) => {
-    if (silince && level > 500) {
+const INPUT_LEVEL_THRESHOLD = 500;
+if (silince && level > INPUT_LEVEL_THRESHOLD) {
       trace(`[onInputLevelChanged] speak detected. level = ${level}\n`);
       silince = false;
     }
