@@ -1,13 +1,13 @@
 import ChatAudioIO from "ChatAudioIO";
 
 const STATES = {
-  FAILED: -1,
-  DISCONNECTED: 0,
-  DISCONNECTING: 1,
-  CONNECTED: 2,
-  CONNECTING: 3,
-  LISTENING: 4,
-  SPEAKING: 5,
+  FAILED: ChatAudioIO.FAILED,
+  DISCONNECTED: ChatAudioIO.DISCONNECTED,
+  DISCONNECTING: ChatAudioIO.DISCONNECTING,
+  CONNECTED: ChatAudioIO.CONNECTED,
+  CONNECTING: ChatAudioIO.DISCONNECTING,
+  LISTENING: ChatAudioIO.LISTENING,
+  SPEAKING: ChatAudioIO.SPEAKING,
 };
 
 const stateMap = new Map(Object.entries(STATES).map(([key, value]) => [value, key]));
