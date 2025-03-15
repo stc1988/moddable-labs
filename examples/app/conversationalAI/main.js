@@ -56,4 +56,8 @@ const chat = new ChatAudioIO({
   },
 });
 
-chat.connect();
+try {
+  chat.connect();
+} catch (error) {
+  trace(`[Error] Failed to connect: ${error}\n`);
+}
