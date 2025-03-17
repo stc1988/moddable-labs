@@ -31,6 +31,9 @@ const chat = new ChatAudioIO({
         inputTranscript = "";
         outputTranscript = "";
         break;
+      case "FAILED":
+        trace(`${this.error}\n}`)
+        break;
     }
     if (currentState === "LISTENING") {
       trace("[onStateChanged]output end\n");
