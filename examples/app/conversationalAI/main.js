@@ -5,7 +5,7 @@ const STATES = {
   DISCONNECTED: ChatAudioIO.DISCONNECTED,
   DISCONNECTING: ChatAudioIO.DISCONNECTING,
   CONNECTED: ChatAudioIO.CONNECTED,
-  CONNECTING: ChatAudioIO.DISCONNECTING,
+  CONNECTING: ChatAudioIO.CONNECTING,
   LISTENING: ChatAudioIO.LISTENING,
   SPEAKING: ChatAudioIO.SPEAKING,
 };
@@ -31,8 +31,11 @@ const chat = new ChatAudioIO({
         inputTranscript = "";
         outputTranscript = "";
         break;
+      case "FAILED":
+        trace(`${this.error}\n}`)
+        break;
     }
-    if (currentState === "LISTENING") {
+    if (currentState === "SPEAKING") {
       trace("[onStateChanged]output end\n");
     }
     currentState = s;
