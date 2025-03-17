@@ -35,7 +35,7 @@ const chat = new ChatAudioIO({
         trace(`${this.error}\n}`)
         break;
     }
-    if (currentState === "LISTENING") {
+    if (currentState === "SPEAKING") {
       trace("[onStateChanged]output end\n");
     }
     currentState = s;
