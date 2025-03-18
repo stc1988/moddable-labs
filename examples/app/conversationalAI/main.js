@@ -32,7 +32,7 @@ const chat = new ChatAudioIO({
         outputTranscript = "";
         break;
       case "FAILED":
-        trace(`${this.error}\n}`)
+        trace(`${chat.error}\n}`)
         break;
     }
     if (currentState === "SPEAKING") {
@@ -62,8 +62,4 @@ if (silince && level > INPUT_LEVEL_THRESHOLD) {
   },
 });
 
-try {
-  chat.connect();
-} catch (error) {
-  trace(`[Error] Failed to connect: ${error}\n`);
-}
+chat.connect();
