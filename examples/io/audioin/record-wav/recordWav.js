@@ -50,7 +50,7 @@ headerView.setUint16(20, channels, true); // Use the actual number of channels
     headerView.setUint16(22, channels, true);
     headerView.setUint32(24, sampleRate, true);
     headerView.setUint32(28, byteRate, true);
-    headerView.setUint16(32, (1 * bitsPerSample) >> 3, true);
+    headerView.setUint16(32, (channels * bitsPerSample) >> 3, true);
     headerView.setUint16(34, bitsPerSample, true);
     headerView.setUint8(36, "d".charCodeAt());
     headerView.setUint8(37, "a".charCodeAt());
