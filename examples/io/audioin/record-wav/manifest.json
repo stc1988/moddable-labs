@@ -1,0 +1,37 @@
+{
+  "include": [
+    "$(MODDABLE)/examples/manifest_base.json",
+    "$(MODDABLE)/examples/manifest_net.json",
+    "./manifest_record-wav.json",
+    "../../../network/services/openai/transcription/manifest_transcription.json"
+  ],
+  "modules": {
+    "*": ["./main"]
+  },
+  "defines": {
+    "audioIn": {
+      "sampleRate": 16000,
+      "bitsPerSample": 16
+    },
+    "audioOut": {
+      "bitsPerSample": 16,
+      "numChannels": 1,
+      "sampleRate": 44100,
+      "queueLength": 12
+    }
+  },
+  "creation": {
+    "static": 442368,
+    "chunk": {
+      "initial": 8192,
+      "incremental": 2048
+    },
+    "heap": {
+      "initial": 512,
+      "incremental": 64
+    }
+  },
+  "config": {
+    "api_key": "YOUR-API-KEY"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "include": [
+    "$(MODDABLE)/modules/io/manifest.json",
+    "$(MODDABLE)/modules/io/audioin/manifest.json"
+  ],
+  "modules": {
+    "*": ["./recordWav"]
+  },
+  "preloads": ["recordWav"]
+}
