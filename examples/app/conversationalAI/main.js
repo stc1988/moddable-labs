@@ -3,17 +3,19 @@ import ChatAudioIO from "ChatAudioIO";
 const STATES = {
   FAILED: ChatAudioIO.FAILED,
   DISCONNECTED: ChatAudioIO.DISCONNECTED,
-  DISCONNECTING: ChatAudioIO.DISCONNECTING,
-  CONNECTED: ChatAudioIO.CONNECTED,
   CONNECTING: ChatAudioIO.CONNECTING,
-  LISTENING: ChatAudioIO.LISTENING,
+  DISCONNECTING: ChatAudioIO.DISCONNECTING,
   SPEAKING: ChatAudioIO.SPEAKING,
+  LISTENING: ChatAudioIO.LISTENING,
+  WAITING: ChatAudioIO.WAITING,
 };
 
-const stateMap = new Map(Object.entries(STATES).map(([key, value]) => [value, key]));
+const stateMap = new Map(
+  Object.entries(STATES).map(([key, value]) => [value, key]),
+);
 
-let currentState;
 let silince = true;
+let currentState;
 let inputTranscript = "";
 let outputTranscript = "";
 
@@ -26,23 +28,24 @@ const chat = new ChatAudioIO({
     trace(`[onStateChanged]${currentState} => ${s}\n`);
 
     switch (s) {
-      case "LISTENING":
+      case "SPEAKING":
         silince = true;
         inputTranscript = "";
         outputTranscript = "";
         break;
       case "FAILED":
-        trace(`${chat.error}\n}`)
+        trace(`${chat.error}\n}`);
         break;
     }
-    if (currentState === "SPEAKING") {
+    if (currentState === "LISTENING") {
       trace("[onStateChanged]output end\n");
     }
     currentState = s;
   },
   onInputLevelChanged: (level) => {
-const INPUT_LEVEL_THRESHOLD = 500;
-if (silince && level > INPUT_LEVEL_THRESHOLD) {
+    // trace(`[onInputLevelChanged]${level}\n`)
+    const INPUT_LEVEL_THRESHOLD = 500;
+    if (silince && level > INPUT_LEVEL_THRESHOLD) {
       trace(`[onInputLevelChanged] speak detected. level = ${level}\n`);
       silince = false;
     }
