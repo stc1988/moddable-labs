@@ -1,0 +1,10 @@
+{
+  "defines": {
+    "audioIn": {
+      "i2s": {
+        "lr_pin": 1,
+        "datain": 2
+      }
+    }
+  }
+}
