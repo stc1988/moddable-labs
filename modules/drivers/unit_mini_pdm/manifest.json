@@ -1,0 +1,64 @@
+{
+  "include": ["$(MODDABLE)/modules/io/audioin/manifest.json"],
+  "defines": {
+    "audioIn": {
+      "sampleRate": 11025,
+      "numChannels": 1,
+      "bitsPerSample": 16,
+      "i2s": {
+        "pdm": 1,
+        "num": 0
+      }
+    }
+  },
+  "platforms": {
+    "esp32/m5atom_echo": {
+      "include": ["./manifest/manifest_m5atom.json"]
+    },
+    "esp32/m5atom_lite": {
+      "include": ["./manifest/manifest_m5atom.json"]
+    },
+    "esp32/m5atom_matrix": {
+      "include": ["./manifest/manifest_m5atom.json"]
+    },
+    "esp32/m5atom_s3": {
+      "include": ["./manifest/manifest_m5atom_s3.json"]
+    },
+    "esp32/m5atom_s3_lite": {
+      "include": ["./manifest/manifest_m5atom_s3.json"]
+    },
+    "esp32/m5atom_s3r": {
+      "include": ["./manifest/manifest_m5atom_s3.json"]
+    },
+    "esp32/m5atom_s3r_m12": {
+      "include": ["./manifest/manifest_m5atom_s3.json"]
+    },
+    "esp32/m5atom_s3r_cam": {
+      "include": ["./manifest/manifest_m5atom_s3.json"]
+    },
+    "esp32/m5dial": {
+      "include": ["./manifest/manifest_m5dial.json"]
+    },
+    "esp32/m5stack2": {
+      "include": ["./manifest/manifest_m5stack.json"]
+    },
+    "esp32/m5stack_fire": {
+      "include": ["./manifest/manifest_m5stack.json"]
+    },
+    "esp32/m5stack_core2": {
+      "include": ["./manifest/manifest_m5stack_core2.json"]
+    },
+    "esp32/m5stack_cores3": {
+      "include": ["./manifest/manifest_m5stack_cores3.json"]
+    },
+    "esp32/m5stick_c": {
+      "include": ["./manifest/manifest_m5stick.json"]
+    },
+    "esp32/m5stick_cplus": {
+      "include": ["./manifest/manifest_m5stick.json"]
+    },
+    "esp32/m5stick_cplus2": {
+      "include": ["./manifest/manifest_m5stick.json"]
+    }
+  }
+}
