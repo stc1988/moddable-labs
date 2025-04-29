@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+        "moduleResolution": "Node",
+        "incremental": true,
+        "outDir": "dist",
+        "lib": [
+            "es2022"
+        ],
+        "module": "es2022",
+        "sourceMap": true,
+        "target": "ES2022",
+        "baseUrl": ".",
+        "paths": {
+            "*": [
+                "*",
+                "node_modules/@moddable/typings/*"
+            ]
+        },
+        "types": [
+            "./node_modules/@moddable/typings/xs",
+            "./node_modules/@moddable/typings/mcpack"
+        ],
+        "esModuleInterop": true,
+    },
+    "include": [
+        "src/**/*.ts"
+    ]
+}
