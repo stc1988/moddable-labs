@@ -3,18 +3,13 @@
     "moduleResolution": "Node",
     "incremental": true,
     "outDir": "dist",
-    "lib": [
-      "es2022"
-    ],
+    "lib": ["es2022"],
     "module": "es2022",
     "sourceMap": true,
     "target": "ES2022",
     "baseUrl": ".",
     "paths": {
-      "*": [
-        "*",
-        "node_modules/@moddable/typings/*"
-      ],
+      "*": ["*", "node_modules/@moddable/typings/*"],
       "@moddable/eventemitter3": [
         "./node_modules/@moddable/eventemitter3/eventemitter3"
       ]
@@ -24,7 +19,5 @@
       "./node_modules/@moddable/typings/mcpack"
     ]
   },
-  "include": [
-    "src/**/*.ts"
-  ]
+  "include": ["src/**/*.ts"]
 }
