@@ -1,0 +1,18 @@
+{
+  "name": "mitt",
+  "version": "1.0.0",
+  "dependencies": {
+    "mitt": "^3.0.1"
+  },
+  "devDependencies": {
+    "@moddable/typings": "^5.6.0"
+  },
+  "main": "dist/main.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
