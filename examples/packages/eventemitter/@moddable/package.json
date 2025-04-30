@@ -1,0 +1,19 @@
+{
+  "name": "@moddable/eventemitter",
+  "version": "1.0.0",
+  "dependencies": {
+    "@moddable/eventemitter3": "^1.0.0"
+  },
+  "devDependencies": {
+    "@moddable/typings": "^5.6.0",
+    "typed-emitter": "2.1.0"
+  },
+  "main": "dist/main.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
