@@ -1,0 +1,42 @@
+{
+	"service": {
+		"uuid": "180D",
+		"characteristics": {
+			"c1": {
+				"uuid": "2A37",
+				"maxBytes": 2,
+				"type": "Uint8",
+				"permissions": "read",
+				"properties": "notify"
+			},
+            "c2": {
+				"uuid": "2A38",
+				"maxBytes": 2,
+				"type": "Uint8",
+				"permissions": "read",
+				"properties": "notify"
+			},
+            "c3": {
+				"uuid": "2A39",
+				"maxBytes": 2,
+				"type": "Uint8",
+				"permissions": "read",
+				"properties": "notify"
+			},
+            "c4": {
+				"uuid": "2A3A",
+				"maxBytes": 2,
+				"type": "Uint8",
+				"permissions": "read",
+				"properties": "notify"
+			},
+            "c5": {
+				"uuid": "2A3B",
+				"maxBytes": 2,
+				"type": "Uint8",
+				"permissions": "read",
+				"properties": "notify"
+			}
+		}
+	}
+}
