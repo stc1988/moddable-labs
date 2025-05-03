@@ -36,6 +36,41 @@
 				"type": "Uint8",
 				"permissions": "read",
 				"properties": "notify"
+			},
+			"c6": {
+				"uuid": "2A3C",
+				"maxBytes": 2,
+				"type": "Uint8",
+				"permissions": "read",
+				"properties": "notify"
+			},
+			"c7": {
+				"uuid": "2A3D",
+				"maxBytes": 2,
+				"type": "Uint8",
+				"permissions": "read",
+				"properties": "notify"
+			},
+			"c8": {
+				"uuid": "2A3E",
+				"maxBytes": 2,
+				"type": "Uint8",
+				"permissions": "read",
+				"properties": "notify"
+			},
+			"c9": {
+				"uuid": "2A3F",
+				"maxBytes": 2,
+				"type": "Uint8",
+				"permissions": "read",
+				"properties": "notify"
+			},
+			"c10": {
+				"uuid": "2A40",
+				"maxBytes": 2,
+				"type": "Uint8",
+				"permissions": "read",
+				"properties": "notify"
 			}
 		}
 	}
