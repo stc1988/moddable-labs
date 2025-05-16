@@ -1,0 +1,51 @@
+{
+  "include": ["$(MODDABLE)/modules/io/manifest.json"],
+  "modules": {
+    "setup/atomic_echo_base": "./setup-atomic_echo_base"
+  },
+  "preload": ["setup/atomic_echo_base"],
+  "config": {
+    "es8311": {
+      "volume": 160
+    }
+  },
+  "defines": {
+    "audioOut": {
+      "bitsPerSample": 16,
+      "numChannels": 1,
+      "sampleRate": 11025,
+      "volume_divider": 1,
+      "i2s": {
+        "num": 1,
+        "slot": "I2S_STD_SLOT_BOTH",
+        "bitsPerSample": 16
+      }
+    }
+  },
+  "platforms": {
+    "esp32/m5atom_echo": {
+      "include": ["./targets/manifest_m5atom.json"]
+    },
+    "esp32/m5atom_lite": {
+      "include": ["./targets/manifest_m5atom.json"]
+    },
+    "esp32/m5atom_matrix": {
+      "include": ["./targets/manifest_m5atom.json"]
+    },
+    "esp32/m5atom_s3": {
+      "include": ["./targets/manifest_m5atom_s3.json"]
+    },
+    "esp32/m5atom_s3_lite": {
+      "include": ["./targets/manifest_m5atom_s3.json"]
+    },
+    "esp32/m5atom_s3r": {
+      "include": ["./targets/manifest_m5atom_s3.json"]
+    },
+    "esp32/m5atom_s3r_m12": {
+      "include": ["./targets/manifest_m5atom_s3.json"]
+    },
+    "esp32/m5atom_s3r_cam": {
+      "include": ["./targets/manifest_m5atom_s3.json"]
+    }
+  }
+}
