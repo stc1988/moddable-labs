@@ -1,0 +1,17 @@
+{
+  "config": {
+    "i2c_bus": {
+      "sda": 25,
+      "scl": 21
+    }
+  },
+  "defines": {
+    "audioOut": {
+      "i2s": {
+        "bck_pin": 33,
+        "lr_pin": 19,
+        "dataout_pin": 22
+      }
+    }
+  }
+}

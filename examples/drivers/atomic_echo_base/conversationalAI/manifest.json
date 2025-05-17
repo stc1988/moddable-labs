@@ -1,0 +1,10 @@
+{
+  "include": [
+    "$(MODDABLE)/examples/manifest_base.json",
+    "../atomic_echo_base/manifest.json",
+    "$(MODDABLE)/modules/network/services/chatAudioIO/manifest.json"
+  ],
+  "modules": {
+    "*": ["./main"]
+  }
+}
