@@ -3,7 +3,7 @@
     "audioIn": {
       "i2s": {
         "lr_pin": 32,
-        "datain": 25
+        "datain": 26
       }
     }
   }
