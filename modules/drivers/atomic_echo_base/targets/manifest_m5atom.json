@@ -12,6 +12,13 @@
         "lr_pin": 19,
         "dataout_pin": 22
       }
+    },
+    "audioIn": {
+      "i2s": {
+        "bck_pin": 33,
+        "lr_pin": 19,
+        "datain_pin": 23
+      }
     }
   }
 }

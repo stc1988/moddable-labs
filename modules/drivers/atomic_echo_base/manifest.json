@@ -20,6 +20,13 @@
         "slot": "I2S_STD_SLOT_BOTH",
         "bitsPerSample": 16
       }
+    },
+    "auduioIn": {
+      "sampleRate": 16000,
+      "bitsPerSample": 16,
+      "i2s": {
+        "num": 0
+      }
     }
   },
   "platforms": {
