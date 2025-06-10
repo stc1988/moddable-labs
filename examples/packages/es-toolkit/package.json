@@ -2,8 +2,8 @@
   "name": "es-toolkit",
   "version": "1.0.0",
   "devDependencies": {
-    "@moddable/typings": "^5.3.0",
-    "esbuild": "0.24.2",
+    "@moddable/typings": "^5.7.0",
+    "esbuild": "^0.25.5",
     "typescript": "^5.7.2"
   },
   "main": "build/main.js",
@@ -15,6 +15,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "es-toolkit": "^1.31.0"
+    "es-toolkit": "^1.39.3"
   }
 }
