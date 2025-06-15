@@ -62,8 +62,9 @@ class ES8311 {
     es.writeUint8(0x32, volume); // ES8311_DAC_REG32
 
     // microphone
-    es.writeUint8(0x17, 0xff); // ES8311_ADC_REG17
+    es.writeUint8(0x17, 0xff); // ES8311_ADC_REG17 (ADC volume)
     es.writeUint8(0x14, 0x1a); // ES8311_SYSTEM_REG14
+    es.writeUint8(0x16, 0x01); // ES8311_ADC_REG16 (6DB)
 
     es.close();
   }
