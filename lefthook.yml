@@ -1,0 +1,7 @@
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      run: npm run lint -- --staged --no-errors-on-unmatched
+    format:
+      run: npm run format -- --staged --no-errors-on-unmatched
