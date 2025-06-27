@@ -1,6 +1,7 @@
 import EventSource from "eventsource";
 import Headers from "headers";
 import * as streams from "streams";
+// biome-ignore lint: Moddable way
 for (const key in streams) globalThis[key] = streams[key];
 
 // API specification: https://docs.anthropic.com/en/api/messages

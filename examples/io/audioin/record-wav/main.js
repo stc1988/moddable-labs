@@ -5,7 +5,7 @@ import transcription from "transcription";
 const apiKey = config.api_key;
 
 async function main() {
-  let audio = await recordWav();
+  const audio = await recordWav();
   try {
     const audioTranscription = await transcription({
       apiKey,

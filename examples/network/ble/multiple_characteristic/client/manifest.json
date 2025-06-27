@@ -6,9 +6,7 @@
   "modules": {
     "*": ["./main"]
   },
-  "ble":{
-		"*": [
-			"./bleservices/*"
-		]
-	}
+  "ble": {
+    "*": ["./bleservices/*"]
+  }
 }
