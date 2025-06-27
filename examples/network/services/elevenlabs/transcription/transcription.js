@@ -8,10 +8,8 @@ async function transcription(options) {
   const model = options.model ?? "scribe_v1";
   const language = options.language ?? "en";
 
-  const boundary =
-    `--------------------------${UUID().replaceAll("-", "").substring(0, 22)}`;
+  const boundary = `--------------------------${UUID().replaceAll("-", "").substring(0, 22)}`;
   const header =
-    // biome-ignore lint: reason
     `--${boundary}\r\n` +
     `Content-Disposition: form-data; name="model_id"\r\n\r\n${model}\r\n` +
     `--${boundary}\r\n` +
@@ -31,17 +29,14 @@ async function transcription(options) {
   offset += audio.byteLength;
   bodyView.set(new Uint8Array(ArrayBuffer.fromString(footer)), offset);
 
-  const response = await fetch(
-    "https://api.elevenlabs.io/v1/speech-to-text",
-    {
-      method: "POST",
-      headers: new Headers([
-        ["Content-Type", `multipart/form-data; boundary=${boundary}`],
-        ["xi-api-key", `${apiKey}`],
-      ]),
-      body: bodyView.buffer,
-    },
-  );
+  const response = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
+    method: "POST",
+    headers: new Headers([
+      ["Content-Type", `multipart/form-data; boundary=${boundary}`],
+      ["xi-api-key", `${apiKey}`],
+    ]),
+    body: bodyView.buffer,
+  });
 
   if (response.status === 200) {
     const obj = await response.json();

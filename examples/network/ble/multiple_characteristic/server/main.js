@@ -22,30 +22,30 @@ class HeartRateService extends BLEServer {
     });
   }
   onCharacteristicNotifyEnabled(characteristic) {
-    let name = characteristic.name;
+    const name = characteristic.name;
     trace(`[onCharacteristicNotifyEnabled]${name}\n`);
-    if (name == "c1") {
-      Timer.repeat((id) => {
+    if (name === "c1") {
+      Timer.repeat((_id) => {
         this.notifyValue(characteristic, 0);
       }, 5000);
-    } else if (name == "c2") {
-      Timer.repeat((id) => {
+    } else if (name === "c2") {
+      Timer.repeat((_id) => {
         this.notifyValue(characteristic, 1);
       }, 5000);
-    } else if (name == "c3") {
-      Timer.repeat((id) => {
+    } else if (name === "c3") {
+      Timer.repeat((_id) => {
         this.notifyValue(characteristic, 2);
       }, 5000);
-    } else if (name == "c4") {
-      Timer.repeat((id) => {
+    } else if (name === "c4") {
+      Timer.repeat((_id) => {
         this.notifyValue(characteristic, 3);
       }, 5000);
-    } else if (name == "c5") {
-      Timer.repeat((id) => {
+    } else if (name === "c5") {
+      Timer.repeat((_id) => {
         this.notifyValue(characteristic, 4);
       }, 5000);
     }
   }
 }
 
-let hrs = new HeartRateService();
+const _hrs = new HeartRateService();

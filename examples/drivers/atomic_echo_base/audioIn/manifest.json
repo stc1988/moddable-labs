@@ -1,17 +1,17 @@
 {
-	"include": [
-		"$(MODDABLE)/examples/manifest_base.json",
-		"../../../../modules/drivers/atomic_echo_base/manifest.json",
-		"$(MODDABLE)/modules/io/audioin/manifest.json"
-	],
-	"defines": {
-		"audioIn": {
-			"sampleRate": 11025,
-			"numChannels": 1,
-			"bitsPerSample": 16
-		}
-	},
-	"modules": {
-		"*": "./main"
-	}
+  "include": [
+    "$(MODDABLE)/examples/manifest_base.json",
+    "../../../../modules/drivers/atomic_echo_base/manifest.json",
+    "$(MODDABLE)/modules/io/audioin/manifest.json"
+  ],
+  "defines": {
+    "audioIn": {
+      "sampleRate": 11025,
+      "numChannels": 1,
+      "bitsPerSample": 16
+    }
+  },
+  "modules": {
+    "*": "./main"
+  }
 }

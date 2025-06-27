@@ -19,13 +19,13 @@ class HeartRateClient extends BLEClient {
       if (uuids) found = uuids.find((uuid) => uuid.equals(HR_SERVICE_UUID));
     }
     if (found) {
-      trace(`found\n`);
+      trace("found\n");
       this.stopScanning();
       this.connect(device);
     }
   }
   onConnected(device) {
-    trace(`[onConnected]\n`);
+    trace("[onConnected]\n");
     device.discoverPrimaryService(HR_SERVICE_UUID);
   }
   onDisconnected() {
@@ -36,7 +36,7 @@ class HeartRateClient extends BLEClient {
   }
   onCharacteristics(characteristics) {
     trace(
-      `[onCharacteristics]${characteristics.length} characteristics found\n`
+      `[onCharacteristics]${characteristics.length} characteristics found\n`,
     );
     characteristics.forEach((characteristic) => {
       trace(`[onCharacteristics]${characteristic.name}\n`);
@@ -60,4 +60,4 @@ class HeartRateClient extends BLEClient {
     }
   }
 }
-let hrc = new HeartRateClient();
+const hrc = new HeartRateClient();
