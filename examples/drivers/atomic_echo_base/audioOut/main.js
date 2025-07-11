@@ -10,7 +10,7 @@ let playing = one;
 
 const output = new AudioOut({
   onWritable(size) {
-    let writableSize = size; 
+    let writableSize = size;
     do {
       let use = playing.byteLength - playing.position;
       if (use > writableSize) use = writableSize;
