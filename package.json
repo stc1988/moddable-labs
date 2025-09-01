@@ -17,6 +17,6 @@
     "@arkweid/lefthook": "^0.7.7",
     "@biomejs/biome": "2.2.0",
     "@moddable/typings": "^5.10.1",
-    "xs-dev": "^0.37.1"
+    "xs-dev": "^1.0.0"
   }
 }
