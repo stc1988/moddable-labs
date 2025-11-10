@@ -2,7 +2,7 @@
   "name": "es-toolkit",
   "version": "1.0.0",
   "devDependencies": {
-    "@moddable/typings": "^5.7.0",
+    "@moddable/typings": "^6.0.0",
     "esbuild": "^0.25.5",
     "typescript": "^5.7.2"
   },
