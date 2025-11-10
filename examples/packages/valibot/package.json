@@ -5,7 +5,7 @@
     "valibot": "^1.1.0"
   },
   "devDependencies": {
-    "@moddable/typings": "^5.7.0",
+    "@moddable/typings": "^6.0.0",
     "esbuild": "^0.25.5"
   },
   "main": "build/main.js",
