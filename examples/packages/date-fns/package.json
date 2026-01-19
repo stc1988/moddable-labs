@@ -2,7 +2,7 @@
   "name": "date-fns",
   "version": "1.0.0",
   "devDependencies": {
-    "@moddable/typings": "^6.0.0",
+    "@moddable/typings": "^7.0.0",
     "esbuild": "^0.25.5"
   },
   "main": "build/main.js",
