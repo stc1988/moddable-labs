@@ -6,7 +6,7 @@ export default function (done) {
   new PI4IOE5V6408();
 
   const es = new ES8311({
-    io:device.io.SMBus,
+    io: device.io.SMBus,
     data: config.AtomicEchoBase.sda,
     clock: config.AtomicEchoBase.scl,
     volume: config.AtomicEchoBase.volume,
@@ -15,4 +15,3 @@ export default function (done) {
 
   done?.();
 }
-
