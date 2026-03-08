@@ -5,9 +5,10 @@ export default class ES8311 {
   // initialize ES8311(0x18)
   // https://github.com/m5stack/uiflow-micropython/blob/master/m5stack/libs/driver/es8311/__init__.py
   constructor(options) {
-    this.#es = new options.io({
-      data: options.data,
-      clock: options.clock,
+    let volume = options.volume ?? 128;
+    this.#es = new options.i2c.io({
+      data: options.i2c.data,
+      clock: options.i2c.clock,
       address: 0x18,
       hz: 100000,
     });
@@ -47,7 +48,6 @@ export default class ES8311 {
     es.writeUint8(0x37, 0x08); // ES8311_DAC_REG37
 
     // set volume (0 - 256)
-    let volume = options.volume ?? 128;
     if (volume < 0) volume = 0;
     if (volume > 255) volume = 255;
     es.writeUint8(0x32, volume); // ES8311_DAC_REG32
