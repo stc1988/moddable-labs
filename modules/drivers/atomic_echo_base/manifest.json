@@ -1,11 +1,13 @@
 {
   "include": ["$(MODDABLE)/modules/io/manifest.json"],
   "modules": {
-    "setup/atomic_echo_base": "./setup-atomic_echo_base"
+    "setup/atomic_echo_base": "./setup-atomic_echo_base",
+    "es8311": "./es8311",
+    "pi4ioe5v6408": "./pi4ioe5v6408"
   },
-  "preload": ["setup/atomic_echo_base"],
+  "preload": ["setup/atomic_echo_base", "es8311", "pi4ioe5v6408"],
   "config": {
-    "es8311": {
+    "AtomicEchoBase": {
       "volume": 160
     }
   },

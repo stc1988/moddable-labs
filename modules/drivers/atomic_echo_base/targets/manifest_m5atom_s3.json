@@ -1,6 +1,6 @@
 {
   "config": {
-    "i2c_bus": {
+    "AtomicEchoBase": {
       "sda": 38,
       "scl": 39
     }
