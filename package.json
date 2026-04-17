@@ -15,7 +15,7 @@
   "license": "ISC",
   "devDependencies": {
     "@arkweid/lefthook": "^0.7.7",
-    "@biomejs/biome": "2.4.11",
+    "@biomejs/biome": "2.4.12",
     "@moddable/typings": "^7.2.1",
     "xs-dev": "^1.10.1"
   }
