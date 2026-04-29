@@ -1,37 +1,33 @@
 {
-    "include": [
-        "$(MODDABLE)/examples/manifest_base.json",
-        "$(MODDABLE)/examples/manifest_net.json",
-        "$(MODDABLE)/modules/network/services/chatAudioIO/manifest.json"
-    ],
-    "config": {
-        "startupSound": false,
-        "deepgramKey": "",
-        "elevenLabsKey": "",
-        "geminiAPIKey": "",
-        "openAIKey": "",
-        "humeAIKey": ""
+  "include": [
+    "$(MODDABLE)/examples/manifest_base.json",
+    "$(MODDABLE)/examples/manifest_net.json",
+    "$(MODDABLE)/modules/network/services/chatAudioIO/manifest.json"
+  ],
+  "config": {
+    "startupSound": false,
+    "deepgramKey": "",
+    "elevenLabsKey": "",
+    "geminiAPIKey": "",
+    "openAIKey": "",
+    "humeAIKey": ""
+  },
+  "creation": {
+    "static": 0,
+    "chunk": {
+      "initial": 262144,
+      "incremental": 0
     },
-    "creation": {
-        "static": 0,
-        "chunk": {
-            "initial": 262144,
-            "incremental": 0
-        },
-        "heap": {
-            "initial": 4096,
-            "incremental": 0
-        },
-        "stack": 512
+    "heap": {
+      "initial": 4096,
+      "incremental": 0
     },
-    "modules": {
-        "*": [
-            "./main",
-            "./workers/openAIRealtimeTranscription",
-            "./AudioTranscription"
-        ]
-    },
-    "preload": [
-        "AudioTranscription"
+    "stack": 512
+  },
+  "modules": {
+    "*": [
+      "./main",
+      "./workers/*"
     ]
+  }
 }
