@@ -33,10 +33,18 @@ class OpenAIRealTimeTranscriptionModel extends OpenAIRealTimeModel {
     };
   }
   "conversation.item.input_audio_transcription.delta"(message) {
-    this.postMessage({ id: "receiveInputText", text: message.delta, more: true });
+    this.postMessage({
+      id: "receiveInputText",
+      text: message.delta,
+      more: true,
+    });
   }
   "conversation.item.input_audio_transcription.completed"(message) {
-    this.postMessage({ id: "receiveInputText", text: message.text, more: false });
+    this.postMessage({
+      id: "receiveInputText",
+      text: message.text,
+      more: false,
+    });
   }
 }
 

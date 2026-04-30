@@ -22,7 +22,7 @@ export default function (done) {
     i2c: {
       io: device.io.SMBus,
       data: config.AtomicEchoBase.sda,
-      clock: config.AtomicEchoBase.scl
+      clock: config.AtomicEchoBase.scl,
     },
     volume: config.AtomicEchoBase.volume,
   });

@@ -25,9 +25,6 @@
     "stack": 512
   },
   "modules": {
-    "*": [
-      "./main",
-      "./workers/*"
-    ]
+    "*": ["./main", "./workers/*"]
   }
 }
