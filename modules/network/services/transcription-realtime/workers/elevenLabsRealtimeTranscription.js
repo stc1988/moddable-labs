@@ -24,10 +24,10 @@ class ElevenLabsRealTimeTranscriptionModel extends ElevenLabsAgentModel {
     this.post("connected");
   }
   'partial_transcript'(message) {
-    trace(`partial_transcript: ${message.text}\n`);
+    this.postMessage({ id: "receiveInputText", text: message.text, more: true });
   }
   'committed_transcript'(message) {
-    trace(`committed_transcript: ${message.text}\n`);
+    this.postMessage({ id: "receiveInputText", text: message.text, more: false });
   }
 }
 

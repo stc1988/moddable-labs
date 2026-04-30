@@ -32,15 +32,12 @@ class OpenAIRealTimeTranscriptionModel extends OpenAIRealTimeModel {
       },
     };
   }
-  // "conversation.item.input_audio_transcription.delta"(message) {
-  //   trace(message.delta + "\n");
-  // }
-  // "input_audio_buffer.speech_started"(message) {
-  //   trace("Speech started\n");
-  // }
-  // "input_audio_buffer.speech_stopped"(message) {
-  //   trace("Speech stopped\n");
-  // }
+  "conversation.item.input_audio_transcription.delta"(message) {
+    this.postMessage({ id: "receiveInputText", text: message.delta, more: true });
+  }
+  "conversation.item.input_audio_transcription.completed"(message) {
+    this.postMessage({ id: "receiveInputText", text: message.text, more: false });
+  }
 }
 
 new OpenAIRealTimeTranscriptionModel({
