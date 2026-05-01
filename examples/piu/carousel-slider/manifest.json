@@ -1,0 +1,25 @@
+{
+  "include": [
+    "$(MODDABLE)/examples/manifest_base.json",
+    "$(MODDABLE)/examples/manifest_piu.json",
+    "$(MODDABLE)/modules/piu/MC/colorcell/manifest.json"
+  ],
+  "modules": {
+    "*": ["./main"]
+  },
+  "resources": {
+    "*-mask": ["$(MODDABLE)/examples/assets/fonts/OpenSans-Regular-24"],
+    "*-image": [
+      "./assets/slide-1",
+      "./assets/slide-2",
+      "./assets/slide-3",
+      "./assets/slide-4"
+    ]
+  },
+  "platforms": {
+    "mac": {},
+    "...": {
+      "error": "Platform not supported"
+    }
+  }
+}
