@@ -1,11 +1,13 @@
 ---
 name: moddable-piu-builder
-description: Use when building, modifying, or reviewing Moddable SDK applications that use the Piu GUI framework, including Piu Application, Container, Content, Label, Style, Skin, Behavior, Port, Timeline, Transition, manifest resources, simulator validation, and embedded display constraints.
+description: Use when building, modifying, or reviewing Moddable SDK applications that use the Piu GUI framework. Trigger for work under examples/piu/** or modules/piu/**, apps that import piu/MC, manifests that include manifest_piu.json, or code using Piu Application, Container, Content, Label, Style, Skin, Behavior, Port, Timeline, Transition, manifest resources, simulator validation, and embedded display constraints.
 ---
 
 # Moddable Piu Builder
 
-Use this skill for Moddable SDK GUI work that uses Piu. Favor small, memory-conscious JavaScript modules and project-local patterns over web-style UI assumptions.
+Use this skill for Moddable SDK GUI work that uses Piu. This includes changes in `examples/piu/**` and `modules/piu/**`, applications with `import {} from "piu/MC";`, manifests that include `manifest_piu.json`, and code that uses Piu UI classes such as `Application`, `Container`, `Content`, `Label`, `Style`, `Skin`, `Behavior`, `Port`, `Timeline`, or `Transition`.
+
+Favor small, memory-conscious JavaScript modules and project-local patterns over web-style UI assumptions.
 
 ## First Steps
 

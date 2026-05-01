@@ -1,4 +1,5 @@
 import {} from "piu/MC";
+import Timeline from "piu/Timeline";
 
 const SLIDES = [
   { path: "slide-1.cs", title: "Sun" },
@@ -72,6 +73,7 @@ const SlideCard = Container.template(($) => ({
 class CarouselBehavior extends Behavior {
   onCreate(application) {
     this.index = 0;
+    this.animating = false;
     this.startX = 0;
     this.startY = 0;
     this.build(application);
@@ -131,16 +133,51 @@ class CarouselBehavior extends Behavior {
   }
 
   onTouchEnded(application, id, x, y) {
+    if (this.animating) return;
+
     const dx = x - this.startX;
     const dy = y - this.startY;
     if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
 
     const direction = dx < 0 ? 1 : -1;
-    this.index += direction;
-    if (this.index < 0) this.index = SLIDES.length - 1;
-    else if (this.index >= SLIDES.length) this.index = 0;
+    let index = this.index + direction;
+    if (index < 0) index = SLIDES.length - 1;
+    else if (index >= SLIDES.length) index = 0;
 
-    this.build(application);
+    this.slideTo(application, index, direction);
+  }
+
+  onFinished(application) {
+    if (!this.animating) return;
+
+    this.viewport.remove(this.oldCard);
+    this.animating = false;
+  }
+
+  onTimeChanged(application) {
+    if (this.timeline) this.timeline.seekTo(application.time);
+  }
+
+  slideTo(application, index, direction) {
+    const width = this.viewport.width;
+    const oldCard = this.viewport.first;
+    const newCard = new SlideCard(SLIDES[index], { left: direction * width });
+
+    this.animating = true;
+    this.oldCard = oldCard;
+    this.index = index;
+    this.title.string = SLIDES[index].title;
+    this.count.string = this.countText();
+    this.dots.distribute("onUpdate", index);
+    this.viewport.add(newCard);
+
+    this.timeline = new Timeline()
+      .to(oldCard, { x: -direction * width }, 350, Math.quadEaseOut, 0)
+      .to(newCard, { x: 0 }, 350, Math.quadEaseOut, -350);
+
+    application.duration = this.timeline.duration;
+    application.time = 0;
+    application.start();
   }
 
   countText() {
