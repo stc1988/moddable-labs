@@ -7,6 +7,17 @@
     "*": ["./main"]
   },
   "resources": {
-    "*": ["../../assets/image/08_running"]
+    "*-mask": ["$(MODDABLE)/examples/assets/fonts/OpenSans-Regular-24"],
+    "*": [
+      "../../assets/image/01_idle",
+      "../../assets/image/02_run_right",
+      "../../assets/image/03_run_left",
+      "../../assets/image/04_waving",
+      "../../assets/image/05_jumping",
+      "../../assets/image/06_failed",
+      "../../assets/image/07_waiting",
+      "../../assets/image/08_running",
+      "../../assets/image/09_review"
+    ]
   }
 }
