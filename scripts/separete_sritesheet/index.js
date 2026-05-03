@@ -33,13 +33,16 @@ Options:
   --out <path>          Output directory. Default: examples/assets/image
   --frame-width <px>    Source and output frame width. Default: rowHeight + 48
   --gap <px>            Maximum transparent column gap to merge. Default: 16
+  --optimize            Auto-size cells from detected sprite bounds
+  --padding <px>        Extra horizontal cell padding for --optimize. Default: 10
+  --compress            Re-compress generated PNG files with ffmpeg
   --dry-run             Print the planned slices without writing files
   --help                Show this help
 
 Output:
-  PNG files with transparent backgrounds. Each row is split into fixed-width
-  sprites are detected from alpha columns, then re-centered inside equal cells
-  so Piu can animate them with Skin variants.
+  PNG files with transparent backgrounds. Sprites are detected from alpha
+  columns, then re-centered inside equal cells so Piu can animate them with
+  Skin variants.
 
 Rows:
   ${rows.join(", ")}
@@ -52,6 +55,9 @@ function parseArgs(argv) {
     outDir: defaultOutDir,
     frameWidth: undefined,
     gap: 16,
+    optimize: false,
+    padding: 10,
+    compress: false,
     dryRun: false,
   };
 
@@ -75,6 +81,16 @@ function parseArgs(argv) {
       if (!Number.isInteger(options.gap) || options.gap < 0) {
         throw new Error("--gap must be a non-negative integer.");
       }
+    } else if (arg === "--optimize") {
+      options.optimize = true;
+      options.compress = true;
+    } else if (arg === "--padding") {
+      options.padding = Number(argv[++i]);
+      if (!Number.isInteger(options.padding) || options.padding < 0) {
+        throw new Error("--padding must be a non-negative integer.");
+      }
+    } else if (arg === "--compress") {
+      options.compress = true;
     } else {
       throw new Error(`Unknown option: ${arg}`);
     }
@@ -200,16 +216,7 @@ function frameBounds(pixels, sheetWidth, range, y0, frameHeight) {
   return { minX, minY, maxX, maxY };
 }
 
-function rowPlan(
-  pixels,
-  size,
-  rowHeight,
-  frameWidth,
-  gap,
-  rowIndex,
-  name,
-  outDir,
-) {
+function detectRowFrames(pixels, size, rowHeight, gap, rowIndex, name) {
   const y0 = rowIndex * rowHeight;
   const ranges = spriteRanges(pixels, size.width, y0, rowHeight, gap);
   const frames = [];
@@ -229,22 +236,30 @@ function rowPlan(
     throw new Error(`No sprites found in row ${rowIndex + 1} (${name}).`);
   }
 
+  return frames;
+}
+
+function spriteWidth(frame) {
+  return frame.bounds.maxX - frame.bounds.minX + 1;
+}
+
+function spriteHeight(frame) {
+  return frame.bounds.maxY - frame.bounds.minY + 1;
+}
+
+function rowPlan(frames, rowHeight, frameWidth, rowIndex, name, outDir) {
   const targetCenter = (frameWidth - 1) / 2;
   const bottoms = frames.map((frame) => frame.bounds.maxY);
   const targetBottom = Math.max(...bottoms);
 
   for (const frame of frames) {
-    const spriteWidth = frame.bounds.maxX - frame.bounds.minX + 1;
-    const spriteHeight = frame.bounds.maxY - frame.bounds.minY + 1;
-    frame.dx = Math.round(targetCenter - (spriteWidth - 1) / 2);
-    frame.dy = targetBottom - spriteHeight + 1;
+    frame.dx = Math.round(targetCenter - (spriteWidth(frame) - 1) / 2);
+    frame.dy = targetBottom - spriteHeight(frame) + 1;
   }
 
   return {
     index: rowIndex,
     name,
-    y: y0,
-    sourceFrameCount: ranges.length,
     frameWidth,
     frameHeight: rowHeight,
     frames,
@@ -255,6 +270,10 @@ function rowPlan(
       `${String(rowIndex + 1).padStart(2, "0")}_${name}.png`,
     ),
   };
+}
+
+function roundUp(value, multiple) {
+  return Math.ceil(value / multiple) * multiple;
 }
 
 function writeUInt32(buffer, offset, value) {
@@ -335,6 +354,52 @@ function renderRow(pixels, sheetWidth, plan) {
   return encodePng(outputWidth, plan.frameHeight, output);
 }
 
+function compressPng(file) {
+  const temp = path.join(
+    "/private/tmp",
+    `${path.basename(file, ".png")}-${process.pid}.png`,
+  );
+  const result = spawnSync(
+    "ffmpeg",
+    [
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-y",
+      "-i",
+      file,
+      "-compression_level",
+      "9",
+      "-pred",
+      "mixed",
+      temp,
+    ],
+    { encoding: "utf8" },
+  );
+
+  if (result.status !== 0) {
+    if (fs.existsSync(temp)) fs.unlinkSync(temp);
+    throw new Error(
+      `ffmpeg failed while compressing ${file}:\n${result.stderr}`,
+    );
+  }
+
+  const before = fs.statSync(file).size;
+  const after = fs.statSync(temp).size;
+  if (after < before) {
+    fs.renameSync(temp, file);
+    return { before, after };
+  }
+
+  fs.unlinkSync(temp);
+  return { before, after: before };
+}
+
+function formatBytes(size) {
+  if (size < 1024) return `${size} B`;
+  return `${Math.round(size / 1024)}K`;
+}
+
 function main() {
   const options = parseArgs(process.argv.slice(2));
   if (options.help) {
@@ -356,15 +421,23 @@ function main() {
   }
 
   const rowHeight = size.height / rows.length;
-  const frameWidth = options.frameWidth || rowHeight + 48;
   const pixels = readRgba(options.input, size.width, size.height);
+  const detectedRows = rows.map((name, index) =>
+    detectRowFrames(pixels, size, rowHeight, options.gap, index, name),
+  );
+  const maxSpriteWidth = Math.max(
+    ...detectedRows.flatMap((frames) => frames.map(spriteWidth)),
+  );
+  const frameWidth =
+    options.frameWidth ||
+    (options.optimize
+      ? roundUp(maxSpriteWidth + options.padding, 8)
+      : rowHeight + 48);
   const plan = rows.map((name, index) =>
     rowPlan(
-      pixels,
-      size,
+      detectedRows[index],
       rowHeight,
       frameWidth,
-      options.gap,
       index,
       name,
       options.outDir,
@@ -376,6 +449,8 @@ function main() {
   console.log(`Rows: ${rows.length}`);
   console.log(`Output frame: ${frameWidth}x${rowHeight}`);
   console.log(`Merge gap: ${options.gap}`);
+  console.log(`Optimize: ${options.optimize ? "yes" : "no"}`);
+  console.log(`Compress: ${options.compress ? "yes" : "no"}`);
   console.log("");
 
   for (const row of plan) {
@@ -392,6 +467,20 @@ function main() {
   fs.mkdirSync(options.outDir, { recursive: true });
   for (const row of plan) {
     fs.writeFileSync(row.output, renderRow(pixels, size.width, row));
+  }
+
+  if (options.compress) {
+    let before = 0;
+    let after = 0;
+    for (const row of plan) {
+      const result = compressPng(row.output);
+      before += result.before;
+      after += result.after;
+    }
+    console.log("");
+    console.log(
+      `Compressed PNGs: ${formatBytes(before)} -> ${formatBytes(after)}`,
+    );
   }
 
   console.log("");

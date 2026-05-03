@@ -1,7 +1,7 @@
 import {} from "piu/MC";
 import Timeline from "piu/Timeline";
 
-const FRAME_WIDTH = 256;
+const FRAME_WIDTH = 176;
 const FRAME_HEIGHT = 208;
 const FRAME_COUNT = 6;
 const CYCLE_DURATION = 900;
