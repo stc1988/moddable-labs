@@ -18,7 +18,10 @@ const rows = [
 ];
 
 const repoRoot = path.resolve(__dirname, "../..");
-const defaultInput = path.join(repoRoot, "examples/assets/image/spritesheet.webp");
+const defaultInput = path.join(
+  repoRoot,
+  "examples/assets/image/spritesheet.webp",
+);
 const defaultOutDir = path.join(repoRoot, "examples/assets/image");
 
 function usage() {
@@ -81,14 +84,20 @@ function parseArgs(argv) {
 }
 
 function getImageSize(input) {
-  const output = execFileSync("sips", ["-g", "pixelWidth", "-g", "pixelHeight", input], {
-    encoding: "utf8",
-  });
+  const output = execFileSync(
+    "sips",
+    ["-g", "pixelWidth", "-g", "pixelHeight", input],
+    {
+      encoding: "utf8",
+    },
+  );
   const width = output.match(/pixelWidth:\s*(\d+)/);
   const height = output.match(/pixelHeight:\s*(\d+)/);
 
   if (!width || !height) {
-    throw new Error(`Could not read image dimensions from sips output:\n${output}`);
+    throw new Error(
+      `Could not read image dimensions from sips output:\n${output}`,
+    );
   }
 
   return {
@@ -127,12 +136,16 @@ function readRgba(input, width, height) {
   );
 
   if (result.status !== 0) {
-    throw new Error(`ffmpeg failed while decoding ${input}:\n${result.stderr.toString()}`);
+    throw new Error(
+      `ffmpeg failed while decoding ${input}:\n${result.stderr.toString()}`,
+    );
   }
 
   const expected = width * height * 4;
   if (result.stdout.length !== expected) {
-    throw new Error(`Expected ${expected} RGBA bytes, received ${result.stdout.length}.`);
+    throw new Error(
+      `Expected ${expected} RGBA bytes, received ${result.stdout.length}.`,
+    );
   }
 
   return result.stdout;
@@ -187,13 +200,28 @@ function frameBounds(pixels, sheetWidth, range, y0, frameHeight) {
   return { minX, minY, maxX, maxY };
 }
 
-function rowPlan(pixels, size, rowHeight, frameWidth, gap, rowIndex, name, outDir) {
+function rowPlan(
+  pixels,
+  size,
+  rowHeight,
+  frameWidth,
+  gap,
+  rowIndex,
+  name,
+  outDir,
+) {
   const y0 = rowIndex * rowHeight;
   const ranges = spriteRanges(pixels, size.width, y0, rowHeight, gap);
   const frames = [];
 
   for (let index = 0; index < ranges.length; index += 1) {
-    const bounds = frameBounds(pixels, size.width, ranges[index], y0, rowHeight);
+    const bounds = frameBounds(
+      pixels,
+      size.width,
+      ranges[index],
+      y0,
+      rowHeight,
+    );
     if (bounds) frames.push({ index, y0, bounds });
   }
 
@@ -222,7 +250,10 @@ function rowPlan(pixels, size, rowHeight, frameWidth, gap, rowIndex, name, outDi
     frames,
     targetCenter,
     targetBottom,
-    output: path.join(outDir, `${String(rowIndex + 1).padStart(2, "0")}_${name}.png`),
+    output: path.join(
+      outDir,
+      `${String(rowIndex + 1).padStart(2, "0")}_${name}.png`,
+    ),
   };
 }
 
@@ -285,7 +316,8 @@ function renderRow(pixels, sheetWidth, plan) {
   plan.frames.forEach((frame, outFrameIndex) => {
     for (let y = frame.bounds.minY; y <= frame.bounds.maxY; y += 1) {
       for (let x = frame.bounds.minX; x <= frame.bounds.maxX; x += 1) {
-        const tx = outFrameIndex * plan.frameWidth + frame.dx + x - frame.bounds.minX;
+        const tx =
+          outFrameIndex * plan.frameWidth + frame.dx + x - frame.bounds.minX;
         const ty = frame.dy + y - frame.bounds.minY;
         const src = ((frame.y0 + y) * sheetWidth + x) * 4;
         const alpha = pixels[src + 3];
@@ -327,7 +359,16 @@ function main() {
   const frameWidth = options.frameWidth || rowHeight + 48;
   const pixels = readRgba(options.input, size.width, size.height);
   const plan = rows.map((name, index) =>
-    rowPlan(pixels, size, rowHeight, frameWidth, options.gap, index, name, options.outDir),
+    rowPlan(
+      pixels,
+      size,
+      rowHeight,
+      frameWidth,
+      options.gap,
+      index,
+      name,
+      options.outDir,
+    ),
   );
 
   console.log(`Source: ${options.input}`);
@@ -338,7 +379,9 @@ function main() {
   console.log("");
 
   for (const row of plan) {
-    const offsets = row.frames.map((frame) => `${frame.index}:${frame.dx},${frame.dy}`).join(" ");
+    const offsets = row.frames
+      .map((frame) => `${frame.index}:${frame.dx},${frame.dy}`)
+      .join(" ");
     console.log(
       `${row.name}: ${row.frames.length} frames, center=${row.targetCenter}, bottom=${row.targetBottom}, offsets=[${offsets}] -> ${row.output}`,
     );
