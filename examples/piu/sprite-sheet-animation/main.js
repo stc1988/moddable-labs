@@ -1,5 +1,6 @@
 import {} from "piu/MC";
 import Timeline from "piu/Timeline";
+import SpriteSheetPlayer from "spriteSheetPlayer";
 
 const FRAME_WIDTH = 176;
 const FRAME_HEIGHT = 208;
@@ -27,36 +28,18 @@ const titleStyle = new Style({
   horizontal: "center",
   vertical: "middle",
 });
-const runnerSkins = SPRITES.map(
-  (sprite) =>
-    new Skin({
-      texture: new Texture(sprite.path),
-      x: 0,
-      y: 0,
-      width: FRAME_WIDTH,
-      height: FRAME_HEIGHT,
-      variants: FRAME_WIDTH,
-    }),
-);
-
-const Runner = Content.template(($) => ({
-  width: FRAME_WIDTH,
-  height: FRAME_HEIGHT,
-  skin: runnerSkins[$.index],
-}));
-
 class SpriteSheetAppBehavior extends Behavior {
   onCreate(application) {
     this.animating = false;
+    this.index = 0;
     this.startX = 0;
     this.startY = 0;
-    this.spriteIndex = 0;
     this.title = new Label(null, {
       left: 0,
       right: 0,
       top: 0,
       height: 32,
-      string: SPRITES[this.spriteIndex].name,
+      string: SPRITES[0].name,
       style: titleStyle,
     });
     this.viewport = new Container(null, {
@@ -64,18 +47,11 @@ class SpriteSheetAppBehavior extends Behavior {
       height: FRAME_HEIGHT,
       clip: true,
     });
-    this.runner = new Runner(
-      { index: this.spriteIndex },
-      { left: SPRITE_X_OFFSET },
-    );
-    this.viewport.add(this.runner);
+    this.player = this.createPlayer(this.index, SPRITE_X_OFFSET);
+    this.viewport.add(this.player);
     this.layout(application);
     application.add(this.title);
     application.add(this.viewport);
-  }
-
-  onDisplaying(application) {
-    this.startSprite(application);
   }
 
   onTouchBegan(application, id, x, y, ticks) {
@@ -89,71 +65,70 @@ class SpriteSheetAppBehavior extends Behavior {
 
     const dx = x - this.startX;
     const dy = y - this.startY;
-    if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    if (Math.abs(dx) < 42) return;
+    if (Math.abs(dx) < Math.abs(dy) * 1.5) return;
 
     const direction = dx < 0 ? 1 : -1;
-    let spriteIndex = this.spriteIndex + direction;
-    if (spriteIndex < 0) spriteIndex = SPRITES.length - 1;
-    else if (spriteIndex >= SPRITES.length) spriteIndex = 0;
-
-    this.slideTo(application, spriteIndex, direction);
+    this.slideTo(application, this.index + direction, direction);
   }
 
   onFinished(application) {
     if (!this.animating) return;
 
-    this.viewport.remove(this.oldRunner);
-    this.runner = this.newRunner;
-    this.oldRunner = null;
-    this.newRunner = null;
+    this.viewport.remove(this.oldPlayer);
+    this.player = this.newPlayer;
+    this.oldPlayer = null;
+    this.newPlayer = null;
     this.animating = false;
-    this.startSprite(application);
   }
 
   onTimeChanged(application) {
-    if (this.animating) {
-      this.timeline.seekTo(application.time);
-      return;
-    }
-
-    this.runner.variant =
-      Math.floor(application.time / FRAME_DURATION) %
-      SPRITES[this.spriteIndex].frames;
+    if (this.animating) this.timeline.seekTo(application.time);
   }
 
-  startSprite(application) {
-    application.duration = SPRITES[this.spriteIndex].frames * FRAME_DURATION;
-    application.interval = 16;
-    application.loop = true;
-    application.time = 0;
-    application.start();
+  createPlayer(index, left) {
+    return new SpriteSheetPlayer(
+      {
+        sprites: SPRITES,
+        state: SPRITES[index].name,
+        frameWidth: FRAME_WIDTH,
+        frameHeight: FRAME_HEIGHT,
+        frameDuration: FRAME_DURATION,
+      },
+      { left },
+    );
   }
 
-  slideTo(application, spriteIndex, direction) {
+  slideTo(application, index, direction) {
+    let nextIndex = index;
+    if (nextIndex < 0) nextIndex = SPRITES.length - 1;
+    else if (nextIndex >= SPRITES.length) nextIndex = 0;
+    if (nextIndex === this.index) return;
+
     const width = this.viewport.width;
-    const oldRunner = this.runner;
-    const newRunner = new Runner(
-      { index: spriteIndex },
-      { left: direction * width + SPRITE_X_OFFSET },
+    const oldPlayer = this.player;
+    const newPlayer = this.createPlayer(
+      nextIndex,
+      direction * width + SPRITE_X_OFFSET,
     );
 
     this.animating = true;
-    this.oldRunner = oldRunner;
-    this.newRunner = newRunner;
-    this.spriteIndex = spriteIndex;
-    this.title.string = SPRITES[spriteIndex].name;
-    this.viewport.add(newRunner);
+    this.index = nextIndex;
+    this.oldPlayer = oldPlayer;
+    this.newPlayer = newPlayer;
+    this.title.string = SPRITES[nextIndex].name;
+    this.viewport.add(newPlayer);
 
     this.timeline = new Timeline()
       .to(
-        oldRunner,
+        oldPlayer,
         { x: -direction * width + SPRITE_X_OFFSET },
         SLIDE_DURATION,
         Math.quadEaseOut,
         0,
       )
       .to(
-        newRunner,
+        newPlayer,
         { x: SPRITE_X_OFFSET },
         SLIDE_DURATION,
         Math.quadEaseOut,

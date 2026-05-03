@@ -4,7 +4,8 @@
     "$(MODDABLE)/examples/manifest_piu.json"
   ],
   "modules": {
-    "*": ["./main"]
+    "*": ["./main"],
+    "spriteSheetPlayer": ["./spriteSheetPlayer"]
   },
   "resources": {
     "*-mask": ["$(MODDABLE)/examples/assets/fonts/OpenSans-Regular-24"],
