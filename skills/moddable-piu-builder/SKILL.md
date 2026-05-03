@@ -32,6 +32,8 @@ Favor small, memory-conscious JavaScript modules and project-local patterns over
 - Prefer responsive layout using Piu anchors and measured screen dimensions instead of fixed coordinates, unless the target display is fixed by the request.
 - Keep hardware-specific controls behind feature checks such as `global.button` or `global.Host?.Button`.
 - Declare assets and Piu dependencies in `manifest.json`; do not assume images, fonts, or modules are available without manifest entries.
+- For sprite sheets shown through `Texture` and `Skin`, follow Piu's `variants`/`states` model: `variants` is the horizontal pixel offset between frames, `states` is the vertical pixel offset, and `content.variant`/`content.state` select the cell. Use `Texture("name.png")` with manifest texture resources such as `*-color`, `*-alpha`, `*-mask`, or `*`; reserve `*-image` and `path: "name.cs"` for `Image` content.
+- Before animating a sprite sheet with `Skin.variants`, verify the source sheet has equal-size cells and that each sprite is aligned to a consistent visual anchor, such as center plus baseline. If the artwork was exported as irregular sprite positions, normalize it into equal transparent cells first instead of compensating with moving Piu coordinates.
 - Be conservative with object counts, timers, large images, and retained data. Piu runs on constrained devices as well as desktop simulators.
 - Do not convert JavaScript Piu apps to TypeScript unless the user asks. Use TypeScript declarations as reference material for API names, option dictionaries, and event signatures.
 - For 320x240 layouts, budget vertical space explicitly for title/status text before sizing the main content. Do not place status labels flush to the bottom edge.
@@ -51,6 +53,8 @@ If the project uses raw Moddable tooling instead of `xs-dev`, run the equivalent
 ## Common Pitfalls
 
 - Forgetting `manifest_piu.json` or asset/module includes in `manifest.json`.
+- Mixing up `Image` resources and `Texture` resources: `Image(path: "asset.cs")` usually pairs with `*-image`, while `new Texture("asset.png")` expects a texture resource and is used by `Skin`, `drawTexture`, and `drawSkin`.
+- Assuming a sprite sheet is valid because the total image width divides evenly. Check every cell's visible bounds; otherwise `content.variant` may look like the sprite is moving because the artwork inside each cell is not aligned.
 - Writing browser DOM or Canvas-style code instead of Piu object templates and Behaviors.
 - Hard-coding `320x240` assumptions without checking `global.screen`.
 - Filling a 320x240 screen with the main widget first and then adding labels, causing bottom text to clip.
