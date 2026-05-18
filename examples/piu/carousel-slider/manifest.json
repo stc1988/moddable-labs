@@ -15,11 +15,5 @@
       "./assets/slide-3",
       "./assets/slide-4"
     ]
-  },
-  "platforms": {
-    "mac": {},
-    "...": {
-      "error": "Platform not supported"
-    }
   }
 }
