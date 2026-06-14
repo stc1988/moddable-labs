@@ -7,7 +7,7 @@ let silenceSince;
 let silenceNotified = false;
 // const specifier = "elevenLabsRealtimeTranscription";
 // const specifier = "openAIRealtimeTranscription";
-const specifier = "googleGeminiLiveTranscription"
+const specifier = "googleGeminiLiveTranscription";
 
 const chat = new ChatAudioIO({
   specifier,
