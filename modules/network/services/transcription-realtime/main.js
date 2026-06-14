@@ -6,7 +6,8 @@ const VAD_SILENCE_DURATION = 500;
 let silenceSince;
 let silenceNotified = false;
 // const specifier = "elevenLabsRealtimeTranscription";
-const specifier = "openAIRealtimeTranscription";
+// const specifier = "openAIRealtimeTranscription";
+const specifier = "googleGeminiLiveTranscription"
 
 const chat = new ChatAudioIO({
   specifier,
