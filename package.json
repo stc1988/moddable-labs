@@ -16,7 +16,7 @@
   "devDependencies": {
     "@arkweid/lefthook": "^0.7.7",
     "@biomejs/biome": "2.5.0",
-    "@moddable/typings": "^8.2.3",
+    "@moddable/typings": "^9.0.1",
     "xs-dev": "^1.12.1"
   }
 }
