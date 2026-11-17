@@ -1,0 +1,28 @@
+{
+  "build": {
+    "NAME": "espnow-imu-receiver"
+  },
+  "include": [
+    "$(MODDABLE)/examples/manifest_base.json",
+    "$(MODDABLE)/examples/manifest_commodetto.json",
+    "../../../../../modules/network/espnow/manifest_queued.json",
+    "../../../../../modules/data/imu-sync/manifest.json"
+  ],
+  "modules": {
+    "main": "../shared/main",
+    "bounce-view": "../shared/view",
+    "bounce-model": "../shared/model"
+  },
+  "resources": {
+    "*": "../shared/ball",
+    "*-mask": "$(MODDABLE)/examples/assets/fonts/OpenSans-Semibold-18"
+  },
+  "config": {
+    "imuSync": {
+      "role": "receiver",
+      "channel": 1,
+      "interval": 33,
+      "accelerationScale": 9.80665
+    }
+  }
+}

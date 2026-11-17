@@ -1,0 +1,22 @@
+{
+  "build": {
+    "NAME": "espnow-sender"
+  },
+  "include": [
+    "$(MODDABLE)/examples/manifest_base.json",
+    "$(MODDABLE)/examples/manifest_piu.json",
+    "../../../../../modules/network/espnow/manifest_queued.json"
+  ],
+  "modules": {
+    "main": "../shared/sample"
+  },
+  "resources": {
+    "*-mask": ["$(MODDABLE)/examples/assets/fonts/OpenSans-Regular-18"]
+  },
+  "config": {
+    "espnowSample": {
+      "role": "sender",
+      "channel": 1
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "modules": {
+    "imu-sync": "./codec"
+  }
+}

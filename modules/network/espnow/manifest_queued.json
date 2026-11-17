@@ -1,0 +1,6 @@
+{
+  "include": [".", "$(MODDABLE)/modules/embedded/network/interface/wifi"],
+  "modules": {
+    "espnow/queued": "./queued"
+  }
+}

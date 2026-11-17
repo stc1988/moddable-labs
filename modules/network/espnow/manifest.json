@@ -1,0 +1,15 @@
+{
+  "platforms": {
+    "esp32": {
+      "modules": {
+        "espnow": "./espnow"
+      },
+      "dependency": [
+        {
+          "idf": "esp_wifi",
+          "includes": ["include/local"]
+        }
+      ]
+    }
+  }
+}
