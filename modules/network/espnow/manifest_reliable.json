@@ -1,0 +1,6 @@
+{
+  "include": ["."],
+  "modules": {
+    "espnow/reliable": "./reliable"
+  }
+}

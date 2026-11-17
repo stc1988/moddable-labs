@@ -43,6 +43,9 @@ export interface ESPNowInfo {
   channel: number;
   peerCount: number;
   encryptedPeerCount: number;
+  receivePending: number;
+  receiveDropped: number;
+  sendNotificationsDropped: number;
 }
 
 const nativeConstruct = native("xs_espnow_radio_constructor");
@@ -54,6 +57,7 @@ const nativeRemovePeer = native("xs_espnow_radio_remove_peer");
 const nativeSend = native("xs_espnow_radio_send");
 const nativeGetPeer = native("xs_espnow_radio_get_peer");
 const nativeGetInfo = native("xs_espnow_radio_get_info");
+const nativeConsumeReceive = native("xs_espnow_radio_consume_receive");
 const nativeConfigure = native("xs_espnow_radio_configure");
 
 export const BROADCAST = "FFFFFFFFFFFF";
@@ -155,9 +159,10 @@ class ESPNowCore extends (Native(
     this.#receiveQueueLength = receiveQueueLength ?? 8;
     if (
       !Number.isInteger(this.#receiveQueueLength) ||
-      this.#receiveQueueLength < 1
+      this.#receiveQueueLength < 1 ||
+      this.#receiveQueueLength > 65535
     )
-      throw new RangeError("receiveQueueLength must be positive");
+      throw new RangeError("receiveQueueLength must be 1..65535");
     this.#readable = onReadable;
     this.#sent = onSent;
     if ("target" in options) this.target = target;
@@ -167,7 +172,12 @@ class ESPNowCore extends (Native(
       // Native callbacks live on a private receiver, not on the public instance.
       nativeConstruct.call(
         this,
-        { interface: interfaceIndex, offlineChannel: initialChannel, pmk },
+        {
+          interface: interfaceIndex,
+          offlineChannel: initialChannel,
+          pmk,
+          receiveQueueLength: this.#receiveQueueLength,
+        },
         {
           onESPNowSent: (success: boolean) => this.#didSend(success),
           onESPNowReceive: (
@@ -259,7 +269,11 @@ class ESPNowCore extends (Native(
   read(buffer: ByteBuffer): number | undefined;
   read(buffer?: ByteBuffer): ESPNowPacket | number | undefined {
     this.#assertOpen();
-    if (buffer === undefined) return this.#packets.shift();
+    if (buffer === undefined) {
+      const packet = this.#packets.shift();
+      if (packet !== undefined) nativeConsumeReceive.call(this);
+      return packet;
+    }
     const destination = bytes(buffer);
     const view = ArrayBuffer.isView(destination)
       ? new Uint8Array(
@@ -281,6 +295,7 @@ class ESPNowCore extends (Native(
       channel: packet.channel,
     });
     this.#packets.shift();
+    nativeConsumeReceive.call(this);
     return packet.byteLength;
   }
 

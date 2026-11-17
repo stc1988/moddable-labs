@@ -7,9 +7,13 @@ ESP-IDF 5.0以降のESP32向けモジュールです。通常のアプリでは 
 | `espnow`      | Promise、送信キュー、データのコピー、Wi-Fiの自動初期化   | `manifest.json`      |
 | `espnow/core` | 同期write、read、受信通知、MAC送信結果、相手の登録と設定 | `manifest_core.json` |
 
-コアはWi-Fiをimport・初期化・終了しません。アプリがWi-Fiの開始と終了を管理します。独自ヘッダー、相手の発見、JSON、再送、分割・再構成、アプリケーションACKはどちらにも含みません。
+コアはWi-Fiをimport・初期化・終了しません。アプリがWi-Fiの開始と終了を管理します。独自ヘッダー、相手の発見、JSON、再送、分割・再構成、アプリケーションACKはどちらにも含みません。命令向けのACK・再送が必要な場合は、任意で追加する `espnow/reliable` を使えます。
 
 `espnow/core` はECMA-419の[Base Class Pattern](https://419.ecma-international.org/#base-class-pattern)と[UDPのパケット送受信](https://419.ecma-international.org/#io-classes-udp-socket)に使い方を合わせています。optionsオブジェクト、受信通知とreadの組み合わせ、Byte Bufferの扱い、終了処理を共通パターンにそろえています。MAC送信結果のonSent、相手の登録、チャネルと暗号鍵の設定はESP-NOW固有のAPIです。
+
+## 設計・運用の指針
+
+[ESP-NOWの設計・運用ガイド](./BEST_PRACTICES.md) に、coreの実装済みガードレールと変更時に守る制約、アプリ側の送信方式・チャネル・受信検証・鍵・再送・復旧の判断基準をまとめています。実機確認の観点も参照できます。
 
 ## コアの利用
 
@@ -43,7 +47,7 @@ radio.write(Uint8Array.of(1, 2, 3), BROADCAST);
 | ------------------------------------------------ | ---------------------------------------------------------------------------- |
 | `new ESPNowCore(options)`                        | optionsオブジェクト必須。既に動作しているWi-Fi上でESP-NOWを初期化。同時に1つ |
 | `target`                                         | constructorのtargetを公開プロパティに保存。コールバックのthisから参照可能    |
-| `id` / `info`                                    | MAC、チャネル、バージョン、最大データ長、全登録数、暗号化した相手の登録数    |
+| `id` / `info`                                    | MAC、チャネル、バージョン、最大データ長、登録数、受信待機数、受信破棄数、送信通知破棄数    |
 | `format`                                         | `"buffer"` のみ対応                                                          |
 | `writable`                                       | 送信中でなければtrue                                                         |
 | `write(data, peerId)`                            | 同期呼び出しで1件送信。戻り値なし。送信中や入力不正はその場で例外            |
@@ -61,7 +65,7 @@ radio.write(Uint8Array.of(1, 2, 3), BROADCAST);
 
 optionsは省略できません。設定を省く場合も `new ESPNowCore({})` とします。コアはoptionsを書き換えず、対応する各プロパティを一度だけ読み取ります。コールバックは構築時に保存し、`null` または省略で通知を無効にできます。未知のプロパティと `io` は無視します。通常のAPIである `new ESPNow()` は引き続き引数を省略できます。
 
-`read()` の戻り値はArrayBufferで、`peerId`、`destination`、`broadcast`、`rssi`、`channel` が付いています。UDP同様、通知後にreadで取り出します。受信バッファは `receiveQueueLength`（既定8件）で制限し、満杯なら新着パケットを破棄します。これはreadのための受信バッファであり、送信待ちキューではありません。
+`read()` の戻り値はArrayBufferで、`peerId`、`destination`、`broadcast`、`rssi`、`channel` が付いています。UDP同様、通知後にreadで取り出します。受信バッファは `receiveQueueLength`（既定8件、1〜65535件）で制限し、満杯なら新着パケットを破棄します。C側の通知待ちとJS側の未読パケットを合わせて制限し、満杯の場合はコピーや通知メッセージの確保、ArrayBuffer生成の前に破棄します。readで1件取り出すと、その受け入れ枠が戻ります。これはreadのための受信バッファであり、送信待ちキューではありません。
 
 `read(buffer)` は指定したバッファに1パケットをコピーし、同じメタデータをそのバッファに付けます。ビューを渡した場合は、そのビューの範囲に書き込みます。バッファが小さい場合は例外を投げ、パケットは未読のまま残します。パケットの一部だけを読み出すことはできません。現実装では受信時にArrayBufferを作るため、`read(buffer)` を使っても受信時のメモリ確保はなくなりません。
 
@@ -94,11 +98,100 @@ radio.close();
 - コアの相手登録API、id、info、configureに加え、未完了の送信件数をpendingで取得できます。
 - onReceiveのthisはラッパーです。targetも使えます。
 - 旧版のofflineChannelとaddPeer(id, lmk)はこのラッパーだけで受け付けます。
-- 無線の結果通知が失われた場合は後続送信を進めず、closeで破棄できます。タイムアウトや再送はアプリ側で実装してください。
+- 送信完了通知を `sendTimeout`（既定2000ms、正の整数）以内に受け取れなければ、送信中と待機中のPromiseをrejectし、コアを終了します。`faulted` がtrueになり、`onError(error)` で通知します。`recover()` で再初期化するまで送信を受け付けません。
 
 Stack-chanのアダプターと画面付きサンプルは `espnow` を使います。
 
 以前の `espnow/queued` を使っているアプリは、import先を `espnow` に変更してください。低水準APIを使っているアプリは、import先を `espnow/core` に、include先を `manifest_core.json` に変更してください。クラス名とオプション型名は、通常のAPIが `ESPNow` と `ESPNowOptions`、低水準APIが `ESPNowCore` と `ESPNowCoreOptions` です。旧 `manifest_queued.json` は `manifest.json` をincludeする移行用ファイルとして残しています。
+
+## 受信負荷の確認
+
+`info` は次の累計値と現在値も返します。累計値はコアの生存期間内の32ビットカウンターで、再初期化するとリセットされます。
+
+| プロパティ | 内容 |
+| --- | --- |
+| `receivePending` | C側で受け入れ済みの通知待ち・JS側の未読パケットの合計 |
+| `receiveDropped` | 受信枠不足、またはネイティブ通知の確保失敗で破棄した件数 |
+| `sendNotificationsDropped` | MAC送信結果をJSへ通知できなかった件数 |
+
+`read(buffer)` でバッファが小さすぎる場合は、パケットも受け入れ枠も保持します。利用者がread後に保持するバッファや、onReceive内で独自に蓄積するデータはこの上限に含みません。
+
+## 用途に応じた送信
+
+通常の `send(peerId, data)` はFIFOのままです。センサー値や姿勢のように最新値を優先する場合は `sendLatest(peerId, data, key)` を使います。同じ宛先・keyで**待機中**の1件を新しいコピーで置き換えます。送信中のデータ、別のkey、通常のsendは置き換えません。keyの既定値は空文字列です。
+
+```js
+radio.sendLatest(peerId, imuBytes, "imu").catch(error => {
+  // 置き換えられた送信も、通信失敗もここへ通知されます。
+  trace(`${error.message}\n`);
+});
+```
+
+置き換えられたPromiseは `ESP-NOW send superseded by newer data` でrejectします。キューが上限でも既存の待機枠の置き換えは可能です。新しいデータが不正な場合、元の待機データは保持します。
+
+### 命令向けのACKと再送
+
+`manifest_reliable.json` をincludeし、`espnow/reliable` をimportします。この追加レイヤーは通常のespnowと異なる通信形式を使うため、双方で利用してください。相手は、ACKを返せるように両側で事前登録します。暗号化する場合は通常どおり相互にLMKを設定します。
+
+```js
+import ESPNow from "espnow";
+import ReliableESPNow from "espnow/reliable";
+
+let commands;
+const radio = new ESPNow({
+  channel: 1,
+  onReceive(event) {
+    if (!commands?.receive(event)) {
+      // 通常のパケットをここで処理できます。
+    }
+  },
+});
+const peerId = "AABBCCDDEEFF"; // 相手のMACに変更します。
+radio.addPeer(peerId);
+commands = new ReliableESPNow({
+  radio,
+  sessionId: 1, // 動作例。本番では起動・再作成ごとに未使用のIDへ更新します。
+  ackTimeout: 250,
+  retries: 3,
+  onCommand({ peerId, data, sessionId, sequence }) {
+    // 同期処理、またはPromiseを返す非同期処理。
+    // 正常終了後にACKを返します。
+  },
+});
+await commands.send(peerId, Uint8Array.of(1));
+// 終了時はcommands.close()、radio.close()の順で呼びます。
+```
+
+- `send()` の成功は、相手のonCommandが正常終了し、そのACKを受け取ったことを示します。通常のradio.sendのMAC成功とは異なります。
+- 命令を1件ずつ送信します。`queueLimit`（既定8件）は送信中を含みます。ACK待ちの間も、通常のradio.sendや返信ACKは送れます。
+- `ackTimeout` はMAC成功後のACK待ち時間です。MAC失敗時も同じ時間を待って再試行します。`retries`（既定3回、0〜100回）は初回に加える再送回数です。再送は同一のsessionId・連番・データを使います。
+- ユニキャスト専用です。ブロードキャスト命令にはACKを返しません。payloadは1〜234バイトで、16バイトのヘッダーを含めて250バイト以内に収めます。
+- 受信履歴は送信元MACとsessionIdごとの処理済み連番です。重複時は処理を繰り返さずACKだけ返します。非同期処理中の重複には、処理完了までACKしません。
+- `receiveSessionLimit`（既定32組）で履歴を制限します。満杯の場合は新規sessionの命令を受け付けず、既存履歴を維持します。新規sessionを受け入れる運用では、遅延パケットが残らない時点で受信側レイヤーを作り直してください。
+- 同じ送信元では、同一sessionIdを持つ送信レイヤーを並行して動かさないでください。sessionIdは1〜0xFFFFFFFFの整数です。起動・再作成のたびに未使用の値を割り当てます。連番は折り返さず、上限で送信を拒否します。
+- 履歴はRAM上です。受信側の再起動をまたぐ重複実行防止や、処理途中の例外・電源断まで含むexactly-onceは保証しません。必要な命令はアプリ側でも冪等にするか、実行IDを永続化してください。onCommandのthrow/rejectにはACKを返さず、同じ命令が再試行されます。
+- `receive(event)` は、この形式のパケットならtrue、通常の形式ならfalseを返します。`close()` は命令とACK待ちタイマーを終了しますが、渡したradioは閉じません。
+
+通信形式は、先頭4バイトがASCIIのENOW、次の1バイトがバージョン1、種別が1（命令）または2（ACK）、予約領域2バイトが0、sessionIdと連番がそれぞれ32ビットのビッグエンディアンです。ACKはヘッダーのみです。ACKの送信元MAC、sessionId、連番が一致した場合のみ送信成功とします。
+
+## 送信完了通知が失われた場合の復旧
+
+タイムアウト後は、遅延した完了通知で次の送信を誤って完了させないようにコアを閉じます。`recover()` は新しいコアを作り、チャネル・PMK・登録相手・LMKを復元します。鍵は登録時のコピーを保持するため、呼び出し側が元のバッファを再利用しても復旧設定は変わりません。Wi-Fiの所有関係も維持します。
+
+```js
+const radio = new ESPNow({
+  sendTimeout: 2000,
+  onError(error) {
+    trace(`${error.message}\n`);
+    // 通信状態を確認したうえで再開する場合:
+    this.recover();
+  },
+});
+```
+
+`recover()` は失敗した送信を再投入しません。相手で実行済みの可能性があるためです。復旧に失敗した場合は例外となり、faultedのままなので、後で再試行するかcloseできます。明示的なclose後はrecoverできません。自動登録のブロードキャスト相手は復旧時に再作成します。
+
+`espnow/core` は低水準APIのためタイムアウト・自動復旧を持ちません。コアを直接使う場合は、アプリ側でタイムアウト時にcloseし、新規インスタンスへ相手を再登録してください。JSが長時間停止している間はタイマーも実行できないため、sendTimeoutは厳密な実時間の期限ではありません。
 
 ## 通信とWi-Fiの設定
 
@@ -158,6 +251,6 @@ M5Stack CoreS3など、320×240以上の画面を持つESP32端末を2台用意�
 
 ## 検証と参照
 
-リポジトリのルートから `node --test modules/network/espnow/tests/*.test.mjs` で、TypeScriptをコンパイルし、偽のネイティブ・Wi-Fi・Piu環境で検証します。`tsc` がPATHに必要です。無線や実際の描画を検証するものではありません。
+リポジトリのルートから `node --test modules/network/espnow/tests/*.test.mjs` で、TypeScriptをコンパイルし、偽のネイティブ・Wi-Fi・Piu環境で検証します。`tsc` とホストのCコンパイラー（`cc`、AddressSanitizer/UndefinedBehaviorSanitizer対応）がPATHに必要です。送信完了・ACKの紛失、重複、待機中の値の置き換え、復旧、ネイティブの受信上限と破棄数、close時の寿命も検証します。ネイティブテストは実装のCコールバック部分をホスト用スタブと組み合わせて実行します。無線や実際の描画を検証するものではありません。
 
 IMUボール同期の使い方は [examplesのREADME](../../../examples/network/espnow/imu-sync/README.md) を参照してください。IMU同期codecは `modules/data/imu-sync` にあり、ESP-NOWコアとは独立しています。

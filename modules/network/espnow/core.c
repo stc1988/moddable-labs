@@ -30,7 +30,11 @@ typedef struct {
 	uint8_t id[ESPNOW_ID_BYTES];
 	wifi_interface_t interface;
 	uint8_t closed;
-	uint16_t useCount;
+	uint32_t useCount;
+	uint16_t receiveLimit;
+	uint16_t receivePending;
+	uint32_t receiveDropped;
+	uint32_t sendNotificationsDropped;
 } ESPNowRadioRecord, *ESPNowRadio;
 
 static ESPNowRadio gESPNowRadio;
@@ -53,6 +57,14 @@ static ESPNowRadio espnowAcquire(void)
 		radio = NULL;
 	portEXIT_CRITICAL(&gESPNowRadioMux);
 	return radio;
+}
+
+// Credits cover both posted native messages and unread JavaScript packets.
+static void espnowConsumeReceive(ESPNowRadio radio)
+{
+	portENTER_CRITICAL(&gESPNowRadioMux);
+	if (radio->receivePending) radio->receivePending--;
+	portEXIT_CRITICAL(&gESPNowRadioMux);
 }
 
 static uint8_t espnowHexNibble(char value)
@@ -169,8 +181,12 @@ static void espnowSentCallback(const uint8_t *address, esp_now_send_status_t sta
 	(void)address;
 #endif
 	if (!radio) return;
-	if (0 != modMessagePostToMachine(radio->the, &message, sizeof(message), espnowSentDeliver, radio))
+	if (0 != modMessagePostToMachine(radio->the, &message, sizeof(message), espnowSentDeliver, radio)) {
+		portENTER_CRITICAL(&gESPNowRadioMux);
+		radio->sendNotificationsDropped++;
+		portEXIT_CRITICAL(&gESPNowRadioMux);
 		espnowRelease(radio);
+	}
 }
 
 static void espnowReceiveCallback(const esp_now_recv_info_t *info, const uint8_t *data, int dataLength)
@@ -181,6 +197,15 @@ static void espnowReceiveCallback(const esp_now_recv_info_t *info, const uint8_t
 		dataLength < 0 || dataLength > ESPNOW_MAX_FRAME_BYTES) return;
 	radio = espnowAcquire();
 	if (!radio) return;
+	portENTER_CRITICAL(&gESPNowRadioMux);
+	if (radio->receivePending >= radio->receiveLimit) {
+		radio->receiveDropped++;
+		portEXIT_CRITICAL(&gESPNowRadioMux);
+		espnowRelease(radio);
+		return;
+	}
+	radio->receivePending++;
+	portEXIT_CRITICAL(&gESPNowRadioMux);
 	c_memcpy(message, info->src_addr, ESPNOW_ID_BYTES);
 	message[6] = (uint8_t)info->rx_ctrl->rssi;
 	message[7] = (uint8_t)dataLength;
@@ -189,8 +214,13 @@ static void espnowReceiveCallback(const esp_now_recv_info_t *info, const uint8_t
 	message[15] = info->rx_ctrl->channel;
 	c_memcpy(message + ESPNOW_RECEIVE_HEADER_BYTES, data, dataLength);
 	if (0 != modMessagePostToMachine(radio->the, message,
-		(uint16_t)(ESPNOW_RECEIVE_HEADER_BYTES + dataLength), espnowReceiveDeliver, radio))
+		(uint16_t)(ESPNOW_RECEIVE_HEADER_BYTES + dataLength), espnowReceiveDeliver, radio)) {
+		espnowConsumeReceive(radio);
+		portENTER_CRITICAL(&gESPNowRadioMux);
+		radio->receiveDropped++;
+		portEXIT_CRITICAL(&gESPNowRadioMux);
 		espnowRelease(radio);
+	}
 }
 
 static void espnowNativeClose(ESPNowRadio radio)
@@ -233,6 +263,7 @@ void xs_espnow_radio_constructor(xsMachine *the)
 	xsSlot value;
 	uint8_t pmk[ESPNOW_KEY_BYTES];
 	uint8_t hasPMK = 0;
+	int receiveLimit = 8;
 
 	portENTER_CRITICAL(&gESPNowRadioMux);
 	occupied = (NULL != gESPNowRadio);
@@ -245,6 +276,11 @@ void xs_espnow_radio_constructor(xsMachine *the)
 		offlineChannel = xsmcToInteger(value);
 	if ((offlineChannel < 0) || (offlineChannel > 14))
 		xsRangeError("invalid offline channel");
+
+	if (xsmcGet(value, xsArg(0), xsID("receiveQueueLength")))
+		receiveLimit = xsmcToInteger(value);
+	if ((receiveLimit < 1) || (receiveLimit > 65535))
+		xsRangeError("receiveQueueLength must be 1..65535");
 
 	wifi_mode_t mode;
 	if (ESP_OK != esp_wifi_get_mode(&mode))
@@ -272,6 +308,7 @@ void xs_espnow_radio_constructor(xsMachine *the)
 	radio->the = the;
 	radio->object = xsArg(1);
 	radio->useCount = 1;
+	radio->receiveLimit = receiveLimit;
 	if (ESP_OK != esp_read_mac(radio->id, interface == WIFI_IF_STA ? ESP_MAC_WIFI_STA : ESP_MAC_WIFI_SOFTAP)) {
 		c_free(radio);
 		xsUnknownError("read ESP-NOW identity failed");
@@ -367,9 +404,22 @@ void xs_espnow_radio_get_peer(xsMachine *the)
 	xsmcSet(xsResult, xsID("encrypted"), xsVar(0));
 }
 
+void xs_espnow_radio_consume_receive(xsMachine *the)
+{
+	ESPNowRadio radio = xsmcGetHostDataValidate(xsThis, xs_espnow_radio_destructor);
+	espnowConsumeReceive(radio);
+}
+
 void xs_espnow_radio_get_info(xsMachine *the)
 {
-	xsmcGetHostDataValidate(xsThis, xs_espnow_radio_destructor);
+	ESPNowRadio radio = xsmcGetHostDataValidate(xsThis, xs_espnow_radio_destructor);
+	uint32_t receiveDropped, sendNotificationsDropped;
+	uint16_t receivePending;
+	portENTER_CRITICAL(&gESPNowRadioMux);
+	receiveDropped = radio->receiveDropped;
+	sendNotificationsDropped = radio->sendNotificationsDropped;
+	receivePending = radio->receivePending;
+	portEXIT_CRITICAL(&gESPNowRadioMux);
 	esp_now_peer_num_t peers;
 	uint32_t version;
 	uint8_t channel;
@@ -392,6 +442,12 @@ void xs_espnow_radio_get_info(xsMachine *the)
 	xsmcSet(xsResult, xsID("encryptedPeerCount"), xsVar(0));
 	xsmcSetInteger(xsVar(0), channel);
 	xsmcSet(xsResult, xsID("channel"), xsVar(0));
+	xsmcSetUnsigned(xsVar(0), receiveDropped);
+	xsmcSet(xsResult, xsID("receiveDropped"), xsVar(0));
+	xsmcSetInteger(xsVar(0), receivePending);
+	xsmcSet(xsResult, xsID("receivePending"), xsVar(0));
+	xsmcSetUnsigned(xsVar(0), sendNotificationsDropped);
+	xsmcSet(xsResult, xsID("sendNotificationsDropped"), xsVar(0));
 }
 
 void xs_espnow_radio_configure(xsMachine *the)
