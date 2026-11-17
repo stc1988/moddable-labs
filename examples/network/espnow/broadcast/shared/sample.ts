@@ -1,9 +1,27 @@
 import "piu/MC";
+import type { ReceiveEvent } from "espnow/queued";
 import ESPNow from "espnow/queued";
 import config from "mc/config";
+import type { Application as PiuApplication, Label as PiuLabel } from "piu/MC";
 import Timer from "timer";
 
-const options = config.espnowSample;
+interface SampleOptions {
+  role: "sender" | "receiver";
+  channel: number;
+  peerId?: string;
+  pmk?: string;
+  lmk?: string;
+}
+interface SampleMessage {
+  sample: "espnow-screen-v1";
+  kind: "ping" | "pong";
+  sequence: number;
+}
+type SampleData = Record<
+  "MAC" | "CHANNEL" | "COUNTS" | "PEER" | "SIGNAL" | "PAYLOAD" | "STATUS",
+  PiuLabel
+>;
+const options = config.espnowSample as SampleOptions;
 const sender = options.role === "sender";
 const background = new Skin({ fill: "#111827" });
 const normal = new Style({
@@ -17,7 +35,7 @@ const title = new Style({
   horizontal: "left",
 });
 
-function hexKey(value) {
+function hexKey(value: string | undefined): Uint8Array | undefined {
   if (value === undefined) return undefined;
   if (!/^[0-9a-f]{32}$/i.test(value))
     throw new Error("Sample keys must be 32 hex digits");
@@ -27,7 +45,21 @@ function hexKey(value) {
 }
 
 class SampleBehavior extends Behavior {
-  onCreate(_application, data) {
+  declare data: SampleData;
+  declare sent: number;
+  declare received: number;
+  declare failed: number;
+  declare sequence: number;
+  declare status: string;
+  declare peer: string;
+  declare signal: string;
+  declare payload: string;
+  declare lastSend: number;
+  declare waiting: { sequence: number; time: number } | undefined;
+  declare lmk: Uint8Array | undefined;
+  declare radio: ESPNow | undefined;
+  declare timer: ReturnType<typeof Timer.repeat> | undefined;
+  override onCreate(_application: PiuApplication, data: SampleData) {
     this.data = data;
     this.sent = this.received = this.failed = this.sequence = 0;
     this.status = "Starting";
@@ -38,7 +70,7 @@ class SampleBehavior extends Behavior {
     this.waiting = undefined;
   }
 
-  onDisplaying(_application) {
+  override onDisplaying(_application: PiuApplication) {
     try {
       this.lmk = hexKey(options.lmk);
       this.radio = new ESPNow({
@@ -60,8 +92,8 @@ class SampleBehavior extends Behavior {
             : "  Broadcast");
       this.status = sender ? "Sending every second" : "Waiting for packets";
       this.timer = Timer.repeat(() => this.tick(), 100);
-    } catch (error) {
-      this.status = error.message;
+    } catch (error: unknown) {
+      this.status = error instanceof Error ? error.message : String(error);
       this.radio?.close();
     }
     this.refresh();
@@ -73,7 +105,7 @@ class SampleBehavior extends Behavior {
       this.status = "No application reply";
       this.waiting = undefined;
     }
-    if (sender && now - this.lastSend >= 1000 && this.radio.pending === 0) {
+    if (sender && now - this.lastSend >= 1000 && this.radio?.pending === 0) {
       this.lastSend = now;
       const sequence = ++this.sequence;
       this.waiting = { sequence, time: now };
@@ -87,11 +119,14 @@ class SampleBehavior extends Behavior {
     this.refresh();
   }
 
-  receive(event) {
+  receive(event: ReceiveEvent) {
+    const radio = this.radio;
+    if (!radio) return;
+    const waiting = this.waiting;
     this.received++;
     this.peer = event.peerId;
     this.signal = `${event.rssi} dBm / CH ${event.channel}`;
-    let message;
+    let message: SampleMessage | undefined;
     try {
       message = JSON.parse(String.fromArrayBuffer(event.data));
     } catch {
@@ -109,53 +144,53 @@ class SampleBehavior extends Behavior {
     this.payload = `${message.kind.toUpperCase()} #${message.sequence}`;
     if (!sender && message.kind === "ping") {
       try {
-        if (!this.radio.hasPeer(event.peerId)) {
+        if (!radio.hasPeer(event.peerId)) {
           if (this.lmk) return; // Only the configured encrypted peer may receive replies.
-          if (this.radio.info.peerCount >= 20)
-            throw new Error("Peer table full");
-          this.radio.addPeer(event.peerId);
+          if (radio.info.peerCount >= 20) throw new Error("Peer table full");
+          radio.addPeer(event.peerId);
         }
         this.transmit(event.peerId, {
           sample: "espnow-screen-v1",
           kind: "pong",
           sequence: message.sequence,
         });
-      } catch (error) {
+      } catch (error: unknown) {
         this.failed++;
-        this.status = error.message;
+        this.status = error instanceof Error ? error.message : String(error);
       }
     } else if (
       sender &&
       message.kind === "pong" &&
-      this.waiting?.sequence === message.sequence &&
+      waiting !== undefined &&
+      waiting.sequence === message.sequence &&
       (!options.peerId ||
         event.peerId === options.peerId.replaceAll(":", "").toUpperCase())
     ) {
-      this.status = `Reply in ${Date.now() - this.waiting.time} ms`;
+      this.status = `Reply in ${Date.now() - waiting.time} ms`;
       this.waiting = undefined;
     }
     this.refresh();
   }
 
-  transmit(peerId, message) {
-    this.radio
-      .send(peerId, ArrayBuffer.fromString(JSON.stringify(message)))
-      .then(
-        () => {
-          if (!this.radio) return;
-          this.sent++;
-          // A send callback confirms the MAC result, not application reception.
-          if (!sender) this.status = "Reply sent (MAC)";
-          else if (this.waiting) this.status = "Sent (MAC), waiting reply";
-          this.refresh();
-        },
-        (error) => {
-          if (!this.radio) return;
-          this.failed++;
-          this.status = error.message;
-          this.refresh();
-        },
-      );
+  transmit(peerId: string | undefined, message: SampleMessage) {
+    const radio = this.radio;
+    if (!radio) return;
+    radio.send(peerId, ArrayBuffer.fromString(JSON.stringify(message))).then(
+      () => {
+        if (!this.radio) return;
+        this.sent++;
+        // A send callback confirms the MAC result, not application reception.
+        if (!sender) this.status = "Reply sent (MAC)";
+        else if (this.waiting) this.status = "Sent (MAC), waiting reply";
+        this.refresh();
+      },
+      (error) => {
+        if (!this.radio) return;
+        this.failed++;
+        this.status = error instanceof Error ? error.message : String(error);
+        this.refresh();
+      },
+    );
   }
 
   refresh() {
@@ -175,7 +210,7 @@ class SampleBehavior extends Behavior {
   }
 }
 
-const SampleApplication = Application.template(($) => ({
+const SampleApplication = Application.template<SampleData>(($) => ({
   skin: background,
   style: normal,
   Behavior: SampleBehavior,
@@ -210,7 +245,7 @@ const SampleApplication = Application.template(($) => ({
 
 // Eight text rows need room for glyph drawing commands on a full-screen redraw.
 // The default Poco display list is too small for the initial screen.
-export default new SampleApplication(
-  {},
-  { displayListLength: 8192, touchCount: 0 },
-);
+export default new SampleApplication({} as SampleData, {
+  displayListLength: 8192,
+  touchCount: 0,
+});

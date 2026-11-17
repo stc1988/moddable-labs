@@ -1,3 +1,45 @@
+export type WiFiInterface = "sta" | "ap";
+export type ByteBuffer = ArrayBuffer | Uint8Array;
+export interface ESPNowPacket extends ArrayBuffer {
+  peerId: string;
+  destination: string;
+  broadcast: boolean;
+  rssi: number;
+  channel: number;
+}
+export interface SentEvent {
+  peerId: string;
+  success: boolean;
+}
+export interface ESPNowOptions {
+  channel?: number;
+  interface?: WiFiInterface | undefined;
+  pmk?: ByteBuffer | undefined;
+  receiveQueueLength?: number | undefined;
+  format?: "buffer";
+  target?: unknown;
+  onReadable?: (this: ESPNow, count: number) => void;
+  onSent?: (this: ESPNow, event: SentEvent) => void;
+}
+export interface PeerOptions {
+  channel?: number;
+  interface?: WiFiInterface | undefined;
+  lmk?: ByteBuffer | undefined;
+}
+export interface PeerInfo {
+  peerId: string;
+  channel: number;
+  interface: WiFiInterface;
+  encrypted: boolean;
+}
+export interface ESPNowInfo {
+  version: number;
+  maxDataLength: number;
+  channel: number;
+  peerCount: number;
+  encryptedPeerCount: number;
+}
+
 const nativeConstruct = native("xs_espnow_radio_constructor");
 const nativeClose = native("xs_espnow_radio_close");
 const nativeGetLocalID = native("xs_espnow_get_id");
@@ -13,7 +55,7 @@ export const BROADCAST = "FFFFFFFFFFFF";
 
 const addressPattern = /^(?:[0-9a-f]{12}|(?:[0-9a-f]{2}:){5}[0-9a-f]{2})$/i;
 
-function address(value) {
+function address(value: string): string {
   if (value === BROADCAST) return value;
   if (typeof value !== "string" || !addressPattern.test(value))
     throw new RangeError(
@@ -22,50 +64,60 @@ function address(value) {
   return value.replaceAll(":", "").toUpperCase();
 }
 
-function bytes(value) {
+function bytes(value: unknown): ByteBuffer {
   if (!(value instanceof ArrayBuffer) && !(value instanceof Uint8Array))
     throw new TypeError("data must be an ArrayBuffer or Uint8Array");
   return value;
 }
 
-function key(value) {
+function key(value: unknown): ByteBuffer {
   const result = bytes(value);
   if (result.byteLength !== 16) throw new RangeError("key must be 16 bytes");
   return result;
 }
 
-function channel(value, allowCurrent = false) {
-  if (!Number.isInteger(value) || value < (allowCurrent ? 0 : 1) || value > 14)
+function channel(value: unknown, allowCurrent = false): number {
+  if (
+    typeof value !== "number" ||
+    !Number.isInteger(value) ||
+    value < (allowCurrent ? 0 : 1) ||
+    value > 14
+  )
     throw new RangeError("invalid Wi-Fi channel");
   return value;
 }
 
-function networkInterface(value) {
+function networkInterface(value: WiFiInterface): number {
   if (value !== "sta" && value !== "ap")
     throw new RangeError("interface must be sta or ap");
   return value === "ap" ? 1 : 0;
 }
 
-class ESPNow extends Native("xs_espnow_radio_destructor") {
-  #readable;
-  #sent;
-  #packets = [];
-  #receiveQueueLength;
-  #sending;
+class ESPNow extends (Native(
+  "xs_espnow_radio_destructor",
+) as new () => object) {
+  #readable: ESPNowOptions["onReadable"];
+  #sent: ESPNowOptions["onSent"];
+  #packets: ESPNowPacket[] = [];
+  #receiveQueueLength: number;
+  #sending: string | undefined;
   #closed = false;
-  #id;
-  #interface;
-  #maxDataLength;
-  #lastPeer;
-  #lastAddress;
+  #id: string;
+  #interface: WiFiInterface;
+  #maxDataLength: number;
+  #lastPeer: string | undefined;
+  #lastAddress: string | undefined;
 
-  constructor(options = {}) {
+  declare target?: unknown;
+  declare [Symbol.dispose]: () => void;
+
+  constructor(options: ESPNowOptions = {}) {
     super();
     this.#interface = options.interface ?? "sta";
     const interfaceIndex = networkInterface(this.#interface);
     const initialChannel = channel(options.channel ?? 0, true);
     const pmk = options.pmk === undefined ? undefined : key(options.pmk);
-    for (const name of ["onReadable", "onSent"]) {
+    for (const name of ["onReadable", "onSent"] as const) {
       if (options[name] !== undefined && typeof options[name] !== "function")
         throw new TypeError(`${name} must be a function`);
     }
@@ -86,9 +138,14 @@ class ESPNow extends Native("xs_espnow_radio_destructor") {
         this,
         { interface: interfaceIndex, offlineChannel: initialChannel, pmk },
         {
-          onESPNowSent: (success) => this.#didSend(success),
-          onESPNowReceive: (peerId, data, destination, rssi, channel) =>
-            this.#didReceive(peerId, data, destination, rssi, channel),
+          onESPNowSent: (success: boolean) => this.#didSend(success),
+          onESPNowReceive: (
+            peerId: string,
+            data: ArrayBuffer,
+            destination: string,
+            rssi: number,
+            channel: number,
+          ) => this.#didReceive(peerId, data, destination, rssi, channel),
         },
       );
       ready = true;
@@ -109,7 +166,7 @@ class ESPNow extends Native("xs_espnow_radio_destructor") {
     this.#assertOpen();
     return this.#id;
   }
-  get info() {
+  get info(): ESPNowInfo {
     this.#assertOpen();
     return nativeGetInfo.call(this);
   }
@@ -117,26 +174,26 @@ class ESPNow extends Native("xs_espnow_radio_destructor") {
     this.#assertOpen();
     return this.#sending === undefined;
   }
-  get format() {
+  get format(): "buffer" {
     this.#assertOpen();
     return "buffer";
   }
-  set format(value) {
+  set format(value: "buffer") {
     this.#assertOpen();
     if (value !== "buffer")
       throw new RangeError("only buffer format is supported");
   }
 
-  configure(options) {
+  configure(options: { channel?: number; pmk?: ByteBuffer }) {
     this.#assertOpen();
     if (!this.writable) throw new Error("ESP-NOW send is pending");
-    const configuration = {};
+    const configuration: { channel?: number; pmk?: ByteBuffer } = {};
     if ("channel" in options) configuration.channel = channel(options.channel);
     if ("pmk" in options) configuration.pmk = key(options.pmk);
     nativeConfigure.call(this, configuration);
   }
 
-  addPeer(peerId, options = {}) {
+  addPeer(peerId: string, options: PeerOptions = {}) {
     this.#assertOpen();
     const normalized = address(peerId);
     const lmk = options.lmk === undefined ? undefined : key(options.lmk);
@@ -151,18 +208,18 @@ class ESPNow extends Native("xs_espnow_radio_destructor") {
     );
   }
 
-  getPeer(peerId) {
+  getPeer(peerId: string): PeerInfo | undefined {
     this.#assertOpen();
     const normalized = address(peerId);
     const peer = nativeGetPeer.call(this, normalized);
     return peer ? { peerId: normalized, ...peer } : undefined;
   }
 
-  hasPeer(peerId) {
+  hasPeer(peerId: string): boolean {
     return this.getPeer(peerId) !== undefined;
   }
 
-  removePeer(peerId) {
+  removePeer(peerId: string) {
     this.#assertOpen();
     nativeRemovePeer.call(this, address(peerId));
   }
@@ -172,11 +229,12 @@ class ESPNow extends Native("xs_espnow_radio_destructor") {
     return this.#packets.shift();
   }
 
-  write(data, peerId = BROADCAST) {
+  write(data: ByteBuffer, peerId: string = BROADCAST) {
     this.#assertOpen();
     if (!this.writable) throw new Error("ESP-NOW send is pending");
-    let normalized;
-    if (peerId === this.#lastPeer) normalized = this.#lastAddress;
+    let normalized: string;
+    if (peerId === this.#lastPeer && this.#lastAddress !== undefined)
+      normalized = this.#lastAddress;
     else {
       normalized = address(peerId);
       // Bound the cache to one destination, including long-lived broadcast streams.
@@ -195,24 +253,30 @@ class ESPNow extends Native("xs_espnow_radio_destructor") {
     }
   }
 
-  #didSend(success) {
+  #didSend(success: boolean) {
     if (this.#closed || this.#sending === undefined) return;
     const peerId = this.#sending;
     this.#sending = undefined;
     this.#sent?.call(this, { peerId, success });
   }
 
-  #didReceive(peerId, data, destination, rssi, channel) {
+  #didReceive(
+    peerId: string,
+    data: ArrayBuffer,
+    destination: string,
+    rssi: number,
+    channel: number,
+  ) {
     if (this.#closed || this.#packets.length >= this.#receiveQueueLength)
       return;
-    Object.assign(data, {
+    const packet = Object.assign(data, {
       peerId,
       destination,
       broadcast: destination === BROADCAST,
       rssi,
       channel,
     });
-    this.#packets.push(data);
+    this.#packets.push(packet);
     this.#readable?.call(this, this.#packets.length);
   }
 
@@ -221,7 +285,8 @@ class ESPNow extends Native("xs_espnow_radio_destructor") {
     this.#closed = true;
     this.#packets.length = 0;
     this.#sending = undefined;
-    this.#readable = this.#sent = undefined;
+    this.#readable = undefined;
+    this.#sent = undefined;
     nativeClose.call(this);
   }
 
@@ -230,7 +295,7 @@ class ESPNow extends Native("xs_espnow_radio_destructor") {
   }
 }
 
-export function getESPNowId() {
-  return nativeGetLocalID.call();
+export function getESPNowId(): string {
+  return nativeGetLocalID.call(undefined);
 }
 export default ESPNow;

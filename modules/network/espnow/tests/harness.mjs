@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readTypeScript } from "./typescript.mjs";
 
 export const calls = [];
 export const receivers = new WeakMap();
@@ -39,11 +39,11 @@ globalThis.ESPNowTestWiFi = class {
 const url = (source) =>
   `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
 const coreURL = url(
-  await readFile(new URL("../espnow.js", import.meta.url), "utf8"),
+  await readTypeScript(new URL("../espnow.ts", import.meta.url)),
 );
 export const { default: ESPNow } = await import(coreURL);
 const wrapperSource = (
-  await readFile(new URL("../queued.js", import.meta.url), "utf8")
+  await readTypeScript(new URL("../queued.ts", import.meta.url))
 )
   .replace(/from ['"]espnow['"]/, `from '${coreURL}'`)
   .replace(

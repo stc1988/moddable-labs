@@ -8,12 +8,31 @@ import Resource from "Resource";
 import Poco from "commodetto/Poco";
 import parseBMF from "commodetto/parseBMF";
 import parseBMP from "commodetto/parseBMP";
+import type { Snapshot } from "imu-sync";
 import config from "mc/config";
 
 export default class BounceView {
-  constructor(role) {
+  declare render: InstanceType<typeof Poco>;
+  declare font: ReturnType<typeof parseBMF>;
+  declare ball: ReturnType<typeof parseBMP>;
+  declare alpha: ReturnType<typeof parseBMP>;
+  declare top: number;
+  declare width: number;
+  declare height: number;
+  declare role: "sender" | "receiver";
+  declare black: number;
+  declare gray: number;
+  declare white: number;
+  declare bar: number;
+  declare mac: string;
+  declare stale: boolean;
+  declare x: number | undefined;
+  declare y: number | undefined;
+  constructor(role: "sender" | "receiver") {
     this.render = new Poco(screen, {
-      rotation: config.rotation ?? screen.rotation,
+      rotation:
+        config.rotation ??
+        (screen as typeof screen & { rotation?: number }).rotation,
       displayListLength: 8192,
     });
     this.font = parseBMF(new Resource("OpenSans-Semibold-18.bf4"));
@@ -40,7 +59,7 @@ export default class BounceView {
     this.render.end();
   }
 
-  show(snapshot, status) {
+  show(snapshot: Snapshot, status: string) {
     const { render, font } = this;
     const width = render.width;
     render.begin(0, 0, width, this.top);
@@ -53,7 +72,7 @@ export default class BounceView {
       0,
       width - 8,
     );
-    for (const [index, axis] of ["x", "y", "z"].entries()) {
+    for (const [index, axis] of (["x", "y", "z"] as const).entries()) {
       const value = snapshot.accelerometer[axis];
       const left = Math.floor((index * width) / 3);
       const right = Math.floor(((index + 1) * width) / 3);
@@ -92,7 +111,7 @@ export default class BounceView {
     const y = this.top + Math.round(snapshot.ball.y * this.height);
     const w = this.ball.width;
     const h = this.ball.height;
-    if (this.x !== undefined) {
+    if (this.x !== undefined && this.y !== undefined) {
       render.begin(this.x, this.y, w, h);
       render.fillRectangle(this.black, this.x, this.y, w, h);
       render.end();

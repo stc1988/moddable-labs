@@ -1,17 +1,54 @@
+import type {
+  ByteBuffer,
+  ESPNowInfo,
+  PeerInfo,
+  PeerOptions,
+  WiFiInterface,
+} from "espnow";
+export interface ReceiveEvent {
+  data: ArrayBuffer;
+  peerId: string;
+  destination: string;
+  broadcast: boolean;
+  rssi: number;
+  channel: number;
+}
+export interface QueuedESPNowOptions {
+  channel?: number;
+  offlineChannel?: number;
+  interface?: WiFiInterface | undefined;
+  manageWiFi?: boolean;
+  pmk?: ByteBuffer | undefined;
+  queueLimit?: number;
+  receiveQueueLength?: number | undefined;
+  target?: unknown;
+  onReceive?: (this: QueuedESPNow, event: ReceiveEvent) => void;
+}
+
 import WiFi from "embedded:network/interface/wifi";
 import ESPNow, { BROADCAST } from "espnow";
 
-export default class QueuedESPNow {
-  #radio;
-  #wifi;
-  #receive;
-  #queue = [];
-  #current;
-  #closed = false;
-  #queueLimit;
-  #maxDataLength;
+interface PendingSend {
+  peerId: string;
+  data: ArrayBuffer;
+  resolve: () => void;
+  reject: (reason: unknown) => void;
+}
 
-  constructor(options = {}) {
+export default class QueuedESPNow {
+  #radio!: ESPNow;
+  #wifi: WiFi | undefined;
+  #receive: QueuedESPNowOptions["onReceive"];
+  #queue: PendingSend[] = [];
+  #current: PendingSend | undefined;
+  #closed = false;
+  #queueLimit: number;
+  #maxDataLength: number;
+
+  declare target?: unknown;
+  declare [Symbol.dispose]: () => void;
+
+  constructor(options: QueuedESPNowOptions = {}) {
     this.#receive = options.onReceive;
     this.#queueLimit = options.queueLimit ?? 32;
     if (!Number.isInteger(this.#queueLimit) || this.#queueLimit < 1)
@@ -68,30 +105,30 @@ export default class QueuedESPNow {
     return this.#queue.length + (this.#current ? 1 : 0);
   }
 
-  configure(options) {
+  configure(options: { channel?: number; pmk?: ByteBuffer }) {
     if (this.pending) throw new Error("ESP-NOW sends are pending");
     this.#radio.configure(options);
   }
 
-  addPeer(peerId, options = {}) {
+  addPeer(peerId: string, options: PeerOptions | ByteBuffer = {}) {
     const peerOptions =
       options instanceof ArrayBuffer || options instanceof Uint8Array
         ? { lmk: options }
         : options;
     this.#radio.addPeer(peerId, peerOptions);
   }
-  getPeer(peerId) {
+  getPeer(peerId: string): PeerInfo | undefined {
     return this.#radio.getPeer(peerId);
   }
-  hasPeer(peerId) {
+  hasPeer(peerId: string): boolean {
     return this.#radio.hasPeer(peerId);
   }
-  removePeer(peerId) {
+  removePeer(peerId: string) {
     this.#radio.removePeer(peerId);
   }
 
-  send(peerId, data) {
-    return new Promise((resolve, reject) => {
+  send(peerId: string | undefined, data: ByteBuffer): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
       if (this.#closed) throw new Error("ESP-NOW radio is closed");
       if (this.pending >= this.#queueLimit)
         throw new Error("ESP-NOW send queue is full");
@@ -117,6 +154,7 @@ export default class QueuedESPNow {
   #drain() {
     while (!this.#closed && !this.#current && this.#queue.length) {
       const current = this.#queue.shift();
+      if (!current) break;
       this.#current = current;
       try {
         this.#radio.write(current.data, current.peerId);
@@ -127,7 +165,7 @@ export default class QueuedESPNow {
     }
   }
 
-  #didSend(success) {
+  #didSend(success: boolean) {
     const current = this.#current;
     if (!current) return;
     this.#current = undefined;

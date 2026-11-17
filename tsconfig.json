@@ -1,25 +1,42 @@
 {
+  "include": ["modules/**/*.ts", "examples/**/*.ts"],
   "compilerOptions": {
-    "allowJs": true,
-    "incremental": true,
+    "incremental": false,
     "outDir": "dist",
-    "lib": ["es2022"],
-    "module": "es2022",
+    "lib": ["es2025", "esnext.disposable"],
+    "module": "preserve",
+    "moduleResolution": "bundler",
     "sourceMap": true,
-    "target": "ES2022",
-    "baseUrl": ".",
+    "target": "es2025",
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "noUncheckedSideEffectImports": true,
+    "verbatimModuleSyntax": true,
     "paths": {
-      "*": ["./node_modules/@moddable/typings/*"],
+      "*": [
+        "./node_modules/@moddable/typings/*",
+        "./node_modules/@moddable/typings/ble/*",
+        "./node_modules/@moddable/typings/web/*"
+      ],
       "commodetto/*": ["./node_modules/@moddable/typings/commodetto/*"],
       "dns/*": ["./node_modules/@moddable/typings/dns/*"],
       "mc/*": ["./node_modules/@moddable/typings/mc/*"],
+      "mod/*": ["./node_modules/@moddable/typings/mod/*"],
       "pins/*": ["./node_modules/@moddable/typings/pins/*"],
       "piu/*": ["./node_modules/@moddable/typings/piu/*"],
       "text/*": ["./node_modules/@moddable/typings/text/*"],
-      "embedded:provider/*": [
-        "./node_modules/@moddable/typings/embedded_provider/*"
-      ],
       "embedded:io/*": ["./node_modules/@moddable/typings/embedded_io/*"],
+      "embedded:io/audio/*": [
+        "./node_modules/@moddable/typings/embedded_io/audio/*"
+      ],
+      "embedded:io/bluetoothle/*": [
+        "./node_modules/@moddable/typings/embedded_io/ble/*"
+      ],
       "embedded:io/socket/*": [
         "./node_modules/@moddable/typings/embedded_io/socket/*"
       ],
@@ -29,13 +46,32 @@
       "embedded:network/mqtt/*": [
         "./node_modules/@moddable/typings/embedded_network/mqtt/*"
       ],
+      "embedded:network/websocket/*": [
+        "./node_modules/@moddable/typings/embedded_network/websocket/*"
+      ],
       "embedded:network/dns/resolver/*": [
         "./node_modules/@moddable/typings/embedded_network/dns/resolver/*"
-      ]
+      ],
+      "embedded:network/interface/*": [
+        "./node_modules/@moddable/typings/embedded_network/interface/*"
+      ],
+      "embedded:storage/*": [
+        "./node_modules/@moddable/typings/embedded/storage/*"
+      ],
+      "embedded:provider/*": [
+        "./node_modules/@moddable/typings/embedded_provider/*"
+      ],
+      "espnow": ["./modules/network/espnow/espnow.ts"],
+      "espnow/queued": ["./modules/network/espnow/queued.ts"],
+      "imu-sync": ["./modules/data/imu-sync/codec.d.ts"],
+      "bounce-model": ["./examples/network/espnow/imu-sync/shared/model.ts"],
+      "bounce-view": ["./examples/network/espnow/imu-sync/shared/view.ts"]
     },
     "types": [
       "./node_modules/@moddable/typings/xs",
-      "./node_modules/@moddable/typings/mcpack"
+      "./node_modules/@moddable/typings/mcpack",
+      "./node_modules/@moddable/typings/global"
     ]
-  }
+  },
+  "exclude": ["node_modules", "dist", "examples/packages"]
 }

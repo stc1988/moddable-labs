@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import { test } from "node:test";
+import { readTypeScript } from "./typescript.mjs";
 
 test("screen sender and receiver exchange a sequence and show application reply", async () => {
   const radios = [];
@@ -68,12 +68,11 @@ test("screen sender and receiver exchange a sequence and show application reply"
     }
   };
   const source = (
-    await readFile(
+    await readTypeScript(
       new URL(
-        "../../../../examples/network/espnow/broadcast/shared/sample.js",
+        "../../../../examples/network/espnow/broadcast/shared/sample.ts",
         import.meta.url,
       ),
-      "utf8",
     )
   )
     .replace(/import ['"]piu\/MC['"]/, "")

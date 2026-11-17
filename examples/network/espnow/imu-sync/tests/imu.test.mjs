@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { test } from "node:test";
+import { readTypeScript } from "../../../../../modules/network/espnow/tests/typescript.mjs";
 
 const url = (source) =>
   `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
@@ -12,7 +13,7 @@ const codecURL = url(
 );
 const { encode, decode } = await import(codecURL);
 const modelURL = url(
-  await readFile(new URL("../shared/model.js", import.meta.url), "utf8"),
+  await readTypeScript(new URL("../shared/model.ts", import.meta.url)),
 );
 const { default: Model } = await import(modelURL);
 
@@ -69,9 +70,8 @@ test("sender and receiver converge after loss, skip busy sends, reject foreign/o
       return Promise.resolve();
     }
   };
-  const raw = await readFile(
-    new URL("../shared/main.js", import.meta.url),
-    "utf8",
+  const raw = await readTypeScript(
+    new URL("../shared/main.ts", import.meta.url),
   );
   const start = async (role) => {
     const source = raw

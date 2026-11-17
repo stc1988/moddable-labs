@@ -1,25 +1,43 @@
 import BounceModel from "bounce-model";
 import BounceView from "bounce-view";
 import ESPNow from "espnow/queued";
+import type { Snapshot } from "imu-sync";
 import { decode, encode } from "imu-sync";
 import config from "mc/config";
 import Timer from "timer";
 
-const options = config.imuSync;
+const options = config.imuSync as {
+  role: "sender" | "receiver";
+  channel: number;
+  interval: number;
+  accelerationScale: number;
+  peerId?: string;
+};
 const sender = options.role === "sender";
 const view = new BounceView(options.role);
 const model = new BounceModel(view.width, view.height);
 // Moddable's provider currently names this `sensor` (singular).
-const IMU = globalThis.device?.sensors?.IMU ?? globalThis.device?.sensor?.IMU;
+type IMUConstructor = new () => {
+  sample(): { accelerometer?: { x: number; y: number; z: number } } | undefined;
+};
+const device = (
+  globalThis as typeof globalThis & {
+    device?: {
+      sensors?: { IMU?: IMUConstructor };
+      sensor?: { IMU?: IMUConstructor };
+    };
+  }
+).device;
+const IMU = device?.sensors?.IMU ?? device?.sensor?.IMU;
 if (sender && !IMU) throw new Error("Sender requires device.sensor.IMU");
-const sensor = sender ? new IMU() : undefined;
+const sensor = sender && IMU ? new IMU() : undefined;
 const peerId = options.peerId?.replaceAll(":", "").toUpperCase();
-let source;
+let source: string | undefined;
 let lastReceive = 0;
-let received;
+let received: boolean | undefined;
 let sequence = 0;
 let failures = 0;
-let snapshot = {
+let snapshot: Snapshot = {
   sequence: 0,
   accelerometer: { x: 0, y: 0, z: 0 },
   ball: { x: 0.5, y: 0.5 },
@@ -52,7 +70,7 @@ view.show(snapshot, sender ? "starting" : "waiting");
 
 Timer.repeat(() => {
   if (sender) {
-    const sample = sensor.sample()?.accelerometer;
+    const sample = sensor?.sample()?.accelerometer;
     if (!sample) return;
     const scale = options.accelerationScale;
     const accelerometer = {
@@ -63,7 +81,9 @@ Timer.repeat(() => {
     const ball = model.step(accelerometer, options.interval);
     const buffer = encode({ sequence, accelerometer, ball });
     // Display the exact same quantized state as the receiver.
-    snapshot = decode(buffer);
+    const quantized = decode(buffer);
+    if (!quantized) throw new Error("Invalid encoded IMU snapshot");
+    snapshot = quantized;
     sequence = (sequence + 1) & 65535;
     // Never queue stale motion or retransmit old snapshots.
     if (!radio.pending) {

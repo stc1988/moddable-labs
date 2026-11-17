@@ -5,12 +5,15 @@ export default class BounceModel {
   vx = 0;
   vy = 0;
 
-  constructor(width, height) {
+  declare width: number;
+  declare height: number;
+
+  constructor(width: number, height: number) {
     this.width = width;
     this.height = height;
   }
 
-  step({ x, y }, milliseconds) {
+  step({ x, y }: { x: number; y: number }, milliseconds: number) {
     // Preserve the reference bounce's ~60 Hz motion at other sample intervals.
     const dt = milliseconds / 17;
     const damping = 0.98 ** dt;
