@@ -3,6 +3,5 @@
   "modules": {
     "*": ["./build/main"],
     "date-fns": ["./build/lib/date-fns"]
-  },
-  "preload": ["date-fns"]
+  }
 }

@@ -2,8 +2,8 @@
   "name": "date-fns",
   "version": "1.0.0",
   "devDependencies": {
-    "@moddable/typings": "^7.0.0",
-    "esbuild": "^0.25.5"
+    "@moddable/typings": "^10.1.1",
+    "esbuild": "^0.28.2"
   },
   "main": "build/main.js",
   "type": "module",
@@ -14,7 +14,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "date-fns": "^4.1.0",
-    "typescript": "^5.7.2"
+    "date-fns": "^4.4.0",
+    "typescript": "^7.0.2"
   }
 }

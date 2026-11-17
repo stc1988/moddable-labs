@@ -2,11 +2,12 @@
   "name": "valibot",
   "version": "1.0.0",
   "dependencies": {
-    "valibot": "^1.1.0"
+    "valibot": "^1.5.0"
   },
   "devDependencies": {
-    "@moddable/typings": "^7.0.0",
-    "esbuild": "^0.25.5"
+    "@moddable/typings": "^10.1.1",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
   },
   "main": "build/main.js",
   "type": "module",

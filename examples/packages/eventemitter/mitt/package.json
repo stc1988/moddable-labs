@@ -5,7 +5,8 @@
     "mitt": "^3.0.1"
   },
   "devDependencies": {
-    "@moddable/typings": "^5.6.0"
+    "@moddable/typings": "^10.1.1",
+    "typescript": "^7.0.2"
   },
   "main": "dist/main.js",
   "type": "module",
