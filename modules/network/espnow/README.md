@@ -43,23 +43,23 @@ radio.write(Uint8Array.of(1, 2, 3), BROADCAST);
 // 終了時は radio.close() の後で wifi.close() を呼びます。
 ```
 
-| API                                              | 内容                                                                         |
-| ------------------------------------------------ | ---------------------------------------------------------------------------- |
-| `new ESPNowCore(options)`                        | optionsオブジェクト必須。既に動作しているWi-Fi上でESP-NOWを初期化。同時に1つ |
-| `target`                                         | constructorのtargetを公開プロパティに保存。コールバックのthisから参照可能    |
-| `id` / `info`                                    | MAC、チャネル、バージョン、最大データ長、登録数、受信待機数、受信破棄数、送信通知破棄数    |
-| `format`                                         | `"buffer"` のみ対応                                                          |
-| `writable`                                       | 送信中でなければtrue                                                         |
-| `write(data, peerId)`                            | 同期呼び出しで1件送信。戻り値なし。送信中や入力不正はその場で例外            |
-| `onSent({ peerId, success })`                    | MAC送信結果を後で通知。writeから直接呼ばれない                               |
-| `onReadable(count)`                              | 読み出せるパケットの件数を後で通知                                           |
-| `read()`                                         | メタデータ付きArrayBufferを1件返す。空ならundefined                          |
-| `read(buffer)`                                   | 指定したByte Bufferに1パケットを書き込み、バイト数を返す。空ならundefined    |
-| `addPeer(id, { channel, interface, lmk })`       | 相手を登録・更新                                                             |
-| `getPeer(id)` / `hasPeer(id)` / `removePeer(id)` | 登録情報参照・確認・削除。LMKは返さない                                      |
-| `configure({ channel, pmk })`                    | チャネル・PMK変更。送信中は不可                                              |
-| `close()` / `[Symbol.dispose]()`                 | 同じ終了処理。複数回呼べる。以後のコールバックは止まる                       |
-| `getESPNowId()`                                  | STAのMACアドレスを取得                                                       |
+| API                                              | 内容                                                                                    |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| `new ESPNowCore(options)`                        | optionsオブジェクト必須。既に動作しているWi-Fi上でESP-NOWを初期化。同時に1つ            |
+| `target`                                         | constructorのtargetを公開プロパティに保存。コールバックのthisから参照可能               |
+| `id` / `info`                                    | MAC、チャネル、バージョン、最大データ長、登録数、受信待機数、受信破棄数、送信通知破棄数 |
+| `format`                                         | `"buffer"` のみ対応                                                                     |
+| `writable`                                       | 送信中でなければtrue                                                                    |
+| `write(data, peerId)`                            | 同期呼び出しで1件送信。戻り値なし。送信中や入力不正はその場で例外                       |
+| `onSent({ peerId, success })`                    | MAC送信結果を後で通知。writeから直接呼ばれない                                          |
+| `onReadable(count)`                              | 読み出せるパケットの件数を後で通知                                                      |
+| `read()`                                         | メタデータ付きArrayBufferを1件返す。空ならundefined                                     |
+| `read(buffer)`                                   | 指定したByte Bufferに1パケットを書き込み、バイト数を返す。空ならundefined               |
+| `addPeer(id, { channel, interface, lmk })`       | 相手を登録・更新                                                                        |
+| `getPeer(id)` / `hasPeer(id)` / `removePeer(id)` | 登録情報参照・確認・削除。LMKは返さない                                                 |
+| `configure({ channel, pmk })`                    | チャネル・PMK変更。送信中は不可                                                         |
+| `close()` / `[Symbol.dispose]()`                 | 同じ終了処理。複数回呼べる。以後のコールバックは止まる                                  |
+| `getESPNowId()`                                  | STAのMACアドレスを取得                                                                  |
 
 コールバックの `this` はコアのインスタンスです。ネイティブ処理からの内部通知メソッドは公開しません。
 
@@ -108,11 +108,11 @@ Stack-chanのアダプターと画面付きサンプルは `espnow` を使いま
 
 `info` は次の累計値と現在値も返します。累計値はコアの生存期間内の32ビットカウンターで、再初期化するとリセットされます。
 
-| プロパティ | 内容 |
-| --- | --- |
-| `receivePending` | C側で受け入れ済みの通知待ち・JS側の未読パケットの合計 |
-| `receiveDropped` | 受信枠不足、またはネイティブ通知の確保失敗で破棄した件数 |
-| `sendNotificationsDropped` | MAC送信結果をJSへ通知できなかった件数 |
+| プロパティ                 | 内容                                                     |
+| -------------------------- | -------------------------------------------------------- |
+| `receivePending`           | C側で受け入れ済みの通知待ち・JS側の未読パケットの合計    |
+| `receiveDropped`           | 受信枠不足、またはネイティブ通知の確保失敗で破棄した件数 |
+| `sendNotificationsDropped` | MAC送信結果をJSへ通知できなかった件数                    |
 
 `read(buffer)` でバッファが小さすぎる場合は、パケットも受け入れ枠も保持します。利用者がread後に保持するバッファや、onReceive内で独自に蓄積するデータはこの上限に含みません。
 
@@ -121,7 +121,7 @@ Stack-chanのアダプターと画面付きサンプルは `espnow` を使いま
 通常の `send(peerId, data)` はFIFOのままです。センサー値や姿勢のように最新値を優先する場合は `sendLatest(peerId, data, key)` を使います。同じ宛先・keyで**待機中**の1件を新しいコピーで置き換えます。送信中のデータ、別のkey、通常のsendは置き換えません。keyの既定値は空文字列です。
 
 ```js
-radio.sendLatest(peerId, imuBytes, "imu").catch(error => {
+radio.sendLatest(peerId, imuBytes, "imu").catch((error) => {
   // 置き換えられた送信も、通信失敗もここへ通知されます。
   trace(`${error.message}\n`);
 });
