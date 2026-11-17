@@ -39,18 +39,18 @@ globalThis.ESPNowTestWiFi = class {
 const url = (source) =>
   `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
 const coreURL = url(
-  await readTypeScript(new URL("../espnow.ts", import.meta.url)),
+  await readTypeScript(new URL("../core.ts", import.meta.url)),
 );
-export const { default: ESPNow } = await import(coreURL);
+export const { default: ESPNowCore } = await import(coreURL);
 const wrapperSource = (
-  await readTypeScript(new URL("../queued.ts", import.meta.url))
+  await readTypeScript(new URL("../espnow.ts", import.meta.url))
 )
-  .replace(/from ['"]espnow['"]/, `from '${coreURL}'`)
+  .replace(/from ['"]espnow\/core['"]/, `from '${coreURL}'`)
   .replace(
     /import WiFi from ['"]embedded:network\/interface\/wifi['"]/,
     "const WiFi = globalThis.ESPNowTestWiFi",
   );
-export const { default: QueuedESPNow } = await import(url(wrapperSource));
+export const { default: ESPNow } = await import(url(wrapperSource));
 export function sent(success = true) {
   calls
     .filter((c) => c.name.endsWith("_constructor"))

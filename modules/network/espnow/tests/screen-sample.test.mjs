@@ -81,7 +81,7 @@ test("screen sender and receiver exchange a sequence and show application reply"
       "const config = globalThis.ESPNowSampleConfig",
     )
     .replace(
-      /import ESPNow from ['"]espnow\/queued['"]/,
+      /import ESPNow from ['"]espnow['"]/,
       "const ESPNow = globalThis.ESPNowSampleRadio",
     )
     .replace(

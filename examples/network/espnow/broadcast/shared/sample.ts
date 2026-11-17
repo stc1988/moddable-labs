@@ -1,6 +1,6 @@
 import "piu/MC";
-import type { ReceiveEvent } from "espnow/queued";
-import ESPNow from "espnow/queued";
+import type { ReceiveEvent } from "espnow";
+import ESPNow from "espnow";
 import config from "mc/config";
 import type { Application as PiuApplication, Label as PiuLabel } from "piu/MC";
 import Timer from "timer";

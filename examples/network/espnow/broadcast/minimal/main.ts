@@ -1,4 +1,4 @@
-import ESPNow from "espnow/queued";
+import ESPNow from "espnow";
 import Timer from "timer";
 
 const radio = new ESPNow({

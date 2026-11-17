@@ -1,6 +1,6 @@
 import BounceModel from "bounce-model";
 import BounceView from "bounce-view";
-import ESPNow from "espnow/queued";
+import ESPNow from "espnow";
 import type { Snapshot } from "imu-sync";
 import { decode, encode } from "imu-sync";
 import config from "mc/config";

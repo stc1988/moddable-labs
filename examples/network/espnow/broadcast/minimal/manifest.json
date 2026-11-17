@@ -1,7 +1,7 @@
 {
   "include": [
     "$(MODDABLE)/examples/manifest_base.json",
-    "../../../../../modules/network/espnow/manifest_queued.json"
+    "../../../../../modules/network/espnow"
   ],
   "modules": {
     "*": "./main"

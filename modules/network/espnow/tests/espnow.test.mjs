@@ -3,16 +3,169 @@ import { test } from "node:test";
 import {
   calls,
   ESPNow,
-  QueuedESPNow,
+  ESPNowCore,
   receivers,
   sent,
   state,
 } from "./harness.mjs";
 
+test("core requires options and validates them before native initialization", () => {
+  const baseline = calls.length;
+  for (const options of [undefined, null, 1, "options", false])
+    assert.throws(() => new ESPNowCore(options), TypeError);
+  for (const options of [{ onReadable: 1 }, { onSent: true }, { format: null }])
+    assert.throws(() => new ESPNowCore(options));
+  assert.equal(calls.length, baseline);
+});
+
+test("core reads options once, accepts frozen options and keeps callbacks private", () => {
+  const reads = new Map();
+  const target = {};
+  let notifications = 0;
+  const options = Object.freeze({
+    target,
+    onReadable() {
+      notifications++;
+    },
+    onSent: null,
+    io: "ignored",
+    extra: "ignored",
+  });
+  const radio = new ESPNowCore(
+    new Proxy(options, {
+      get(object, name) {
+        reads.set(name, (reads.get(name) ?? 0) + 1);
+        return object[name];
+      },
+    }),
+  );
+  assert.ok([...reads.values()].every((count) => count === 1));
+  assert.equal(reads.has("extra"), false);
+  assert.equal(reads.has("io"), false);
+  assert.equal(radio.target, target);
+  assert.equal(radio.onReadable, undefined);
+  receivers
+    .get(radio)
+    .onESPNowReceive(
+      "AABBCCDDEEFF",
+      new ArrayBuffer(1),
+      "FFFFFFFFFFFF",
+      -55,
+      1,
+    );
+  assert.equal(notifications, 1);
+  radio.close();
+  assert.equal(radio[Symbol.dispose], radio.close);
+  radio[Symbol.dispose]();
+});
+
+test("core copies a complete packet into caller buffers and preserves it after invalid reads", () => {
+  const radio = new ESPNowCore({});
+  receivers
+    .get(radio)
+    .onESPNowReceive(
+      "AABBCCDDEEFF",
+      Uint8Array.of(1, 2, 3).buffer,
+      "FFFFFFFFFFFF",
+      -55,
+      6,
+    );
+  const small = Uint8Array.of(9, 9);
+  assert.throws(() => radio.read(small), /too small/);
+  assert.deepEqual([...small], [9, 9]);
+  assert.throws(() => radio.read(3), TypeError);
+  const storage = new Uint8Array(8).fill(9);
+  const view = new DataView(storage.buffer, 2, 4);
+  assert.equal(radio.read(view), 3);
+  assert.deepEqual([...storage], [9, 9, 1, 2, 3, 9, 9, 9]);
+  assert.equal(view.peerId, "AABBCCDDEEFF");
+  assert.equal(view.destination, "FFFFFFFFFFFF");
+  assert.equal(view.broadcast, true);
+  assert.equal(view.rssi, -55);
+  assert.equal(view.channel, 6);
+  assert.equal(radio.read(view), undefined);
+  assert.equal(radio.read(), undefined);
+  for (const buffer of [
+    new ArrayBuffer(3),
+    new SharedArrayBuffer(3),
+    new Uint8Array(3),
+    new Int8Array(3),
+  ]) {
+    receivers
+      .get(radio)
+      .onESPNowReceive(
+        "AABBCCDDEEFF",
+        Uint8Array.of(4, 5, 6).buffer,
+        "FFFFFFFFFFFF",
+        -55,
+        6,
+      );
+    assert.equal(radio.read(buffer), 3);
+    assert.deepEqual([...new Uint8Array(buffer.buffer ?? buffer)], [4, 5, 6]);
+  }
+  radio.close();
+  assert.throws(() => radio.read(view), /closed/);
+});
+
+test("core accepts standard byte buffers for writes and keys without changing view ranges", () => {
+  const storage = Uint8Array.of(9, 1, 2, 8);
+  const radio = new ESPNowCore({
+    pmk: new DataView(new ArrayBuffer(20), 2, 16),
+  });
+  for (const data of [
+    storage.buffer,
+    new SharedArrayBuffer(2),
+    storage.subarray(1, 3),
+    new Int8Array(storage.buffer, 1, 2),
+    new DataView(storage.buffer, 1, 2),
+  ]) {
+    radio.write(data);
+    assert.equal(
+      calls.filter((call) => call.name.endsWith("_send")).at(-1).args[1],
+      data,
+    );
+    sent();
+  }
+  assert.throws(() => radio.write(new Uint16Array(2)), TypeError);
+  radio.addPeer("AABBCCDDEEFF", { lmk: new Int8Array(16) });
+  radio.removePeer("AABBCCDDEEFF");
+  radio.close();
+});
+
+test("wrapper snapshots standard byte buffer views and shared buffers", async () => {
+  const radio = new ESPNow();
+  for (const makeView of [
+    (storage) => new DataView(storage.buffer, 1, 2),
+    (storage) => new Int8Array(storage.buffer, 1, 2),
+    () => {
+      const shared = new SharedArrayBuffer(2);
+      new Uint8Array(shared).set([1, 2]);
+      return shared;
+    },
+  ]) {
+    const storage = Uint8Array.of(9, 1, 2, 8);
+    const data = makeView(storage);
+    const pending = radio.send(undefined, data);
+    new Uint8Array(data.buffer ?? data).fill(99);
+    assert.deepEqual(
+      new Uint8Array(
+        calls.filter((call) => call.name.endsWith("_send")).at(-1).args[1],
+      ),
+      Uint8Array.of(1, 2),
+    );
+    sent();
+    await pending;
+  }
+  await assert.rejects(radio.send(undefined, new Uint16Array(2)), TypeError);
+  radio.addPeer("AABBCCDDEEFF", new DataView(new ArrayBuffer(16)));
+  radio.removePeer("AABBCCDDEEFF");
+  radio.close();
+});
+
 test("core writes one packet synchronously and reports MAC completion separately", () => {
   let result;
   const target = {};
-  const radio = new ESPNow({
+  const radio = new ESPNowCore({
     target,
     onSent(event) {
       result = { event, receiver: this };
@@ -36,7 +189,7 @@ test("core writes one packet synchronously and reports MAC completion separately
 
 test("core read returns metadata-bearing buffers, caps receive buffering and stops callbacks on close", () => {
   const counts = [];
-  const radio = new ESPNow({
+  const radio = new ESPNowCore({
     receiveQueueLength: 1,
     onReadable(count) {
       assert.equal(this, radio);
@@ -69,10 +222,10 @@ test("core read returns metadata-bearing buffers, caps receive buffering and sto
 });
 
 test("core validates formats, keys, channels and packet lengths", () => {
-  assert.throws(() => new ESPNow({ format: "number" }), /buffer/);
-  assert.throws(() => new ESPNow({ pmk: new Uint8Array(15) }), /16/);
-  assert.throws(() => new ESPNow({ channel: 99 }), /channel/);
-  const radio = new ESPNow();
+  assert.throws(() => new ESPNowCore({ format: "number" }), /buffer/);
+  assert.throws(() => new ESPNowCore({ pmk: new Uint8Array(15) }), /16/);
+  assert.throws(() => new ESPNowCore({ channel: 99 }), /channel/);
+  const radio = new ESPNowCore({});
   assert.equal(radio.format, "buffer");
   assert.throws(() => radio.write(new ArrayBuffer(1471)), /length/);
   assert.throws(() => radio.write([]), /ArrayBuffer/);
@@ -84,7 +237,7 @@ test("core validates formats, keys, channels and packet lengths", () => {
 });
 
 test("core keeps per-peer configuration separate and exposes no LMK", () => {
-  const radio = new ESPNow();
+  const radio = new ESPNowCore({});
   radio.addPeer("aa:bb:cc:dd:ee:ff", {
     channel: 6,
     interface: "ap",
@@ -106,7 +259,7 @@ test("core keeps per-peer configuration separate and exposes no LMK", () => {
 });
 
 test("wrapper serializes and snapshots sends, bounds the queue and advances on failures", async () => {
-  const radio = new QueuedESPNow({ queueLimit: 2 });
+  const radio = new ESPNow({ queueLimit: 2 });
   const bytes = Uint8Array.of(1, 2);
   const baseline = calls.filter((c) => c.name.endsWith("_send")).length;
   const first = assert.rejects(radio.send(undefined, bytes), /not delivered/);
@@ -136,7 +289,7 @@ test("wrapper serializes and snapshots sends, bounds the queue and advances on f
 
 test("wrapper rejects pending sends on close, closes Wi-Fi and ignores later callbacks", async () => {
   let received = 0;
-  const radio = new QueuedESPNow({
+  const radio = new ESPNow({
     onReceive() {
       received++;
     },
@@ -170,15 +323,15 @@ test("wrapper rejects pending sends on close, closes Wi-Fi and ignores later cal
 test("wrapper cleans up failed initialization and supports caller-owned Wi-Fi", () => {
   const baseline = state.wifiClosed;
   state.failure = "xs_espnow_radio_constructor";
-  assert.throws(() => new QueuedESPNow(), /native failure/);
+  assert.throws(() => new ESPNow(), /native failure/);
   assert.equal(state.wifiClosed, baseline + 1);
-  const radio = new QueuedESPNow({ manageWiFi: false });
+  const radio = new ESPNow({ manageWiFi: false });
   radio.close();
   assert.equal(state.wifiClosed, baseline + 1);
 });
 
 test("streaming sends preserve offset views and ArrayBuffer snapshots without polling native info", async () => {
-  const radio = new QueuedESPNow();
+  const radio = new ESPNow();
   const infoCalls = () =>
     calls.filter((c) => c.name.endsWith("_get_info")).length;
   const baseline = infoCalls();
@@ -212,12 +365,12 @@ test("streaming sends preserve offset views and ArrayBuffer snapshots without po
 test("cached local frame limits still reject oversized v1 packets", async () => {
   state.maxDataLength = 250;
   try {
-    const core = new ESPNow();
+    const core = new ESPNowCore({});
     assert.throws(() => core.write(new ArrayBuffer(251)), /length/);
     core.write(new ArrayBuffer(250));
     sent();
     core.close();
-    const queued = new QueuedESPNow();
+    const queued = new ESPNow();
     await assert.rejects(
       queued.send(undefined, new ArrayBuffer(251)),
       /length/,

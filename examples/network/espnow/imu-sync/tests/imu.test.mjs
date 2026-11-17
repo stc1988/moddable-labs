@@ -76,7 +76,7 @@ test("sender and receiver converge after loss, skip busy sends, reject foreign/o
   const start = async (role) => {
     const source = raw
       .replace(
-        'import ESPNow from "espnow/queued";',
+        'import ESPNow from "espnow";',
         "const ESPNow = globalThis.IMUTestRadio;",
       )
       .replace('from "imu-sync"', `from "${codecURL}"`)

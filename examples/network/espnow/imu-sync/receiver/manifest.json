@@ -5,7 +5,7 @@
   "include": [
     "$(MODDABLE)/examples/manifest_base.json",
     "$(MODDABLE)/examples/manifest_commodetto.json",
-    "../../../../../modules/network/espnow/manifest_queued.json",
+    "../../../../../modules/network/espnow",
     "../../../../../modules/data/imu-sync/manifest.json"
   ],
   "modules": {

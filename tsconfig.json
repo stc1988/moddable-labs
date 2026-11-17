@@ -62,7 +62,7 @@
         "./node_modules/@moddable/typings/embedded_provider/*"
       ],
       "espnow": ["./modules/network/espnow/espnow.ts"],
-      "espnow/queued": ["./modules/network/espnow/queued.ts"],
+      "espnow/core": ["./modules/network/espnow/core.ts"],
       "imu-sync": ["./modules/data/imu-sync/codec.d.ts"],
       "bounce-model": ["./examples/network/espnow/imu-sync/shared/model.ts"],
       "bounce-view": ["./examples/network/espnow/imu-sync/shared/view.ts"]

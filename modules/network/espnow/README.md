@@ -1,24 +1,26 @@
 # ESP-NOW for Moddable
 
-ESP-IDF 5.0以降のESP32向けモジュールです。低水準のコアと、必要なアプリだけが使う送信キュー付きラッパーを分けています。ECMA-419の標準ESP-NOW APIではなく、ModdableのI/O APIを参考にした独自APIです。
+ESP-IDF 5.0以降のESP32向けモジュールです。通常のアプリでは `espnow` を使います。送受信やWi-Fiの管理をアプリ側で行う場合は、低水準APIの `espnow/core` を使えます。どちらもModdableのI/O APIを参考にした独自APIであり、ECMA-419で標準化されたESP-NOW APIではありません。
 
 | モジュール      | 役割                                                     | manifest               |
 | --------------- | -------------------------------------------------------- | ---------------------- |
-| `espnow`        | 同期write、read、受信通知、MAC送信結果、相手の登録と設定 | `manifest.json`        |
-| `espnow/queued` | Promise、送信キュー、データのコピー、Wi-Fiの自動初期化   | `manifest_queued.json` |
+| `espnow`      | Promise、送信キュー、データのコピー、Wi-Fiの自動初期化 | `manifest.json`      |
+| `espnow/core` | 同期write、read、受信通知、MAC送信結果、相手の登録と設定 | `manifest_core.json` |
 
 コアはWi-Fiをimport・初期化・終了しません。アプリがWi-Fiの開始と終了を管理します。独自ヘッダー、相手の発見、JSON、再送、分割・再構成、アプリケーションACKはどちらにも含みません。
 
+`espnow/core` はECMA-419の[Base Class Pattern](https://419.ecma-international.org/#base-class-pattern)と[UDPのパケット送受信](https://419.ecma-international.org/#io-classes-udp-socket)に使い方を合わせています。optionsオブジェクト、受信通知とreadの組み合わせ、Byte Bufferの扱い、終了処理を共通パターンにそろえています。MAC送信結果のonSent、相手の登録、チャネルと暗号鍵の設定はESP-NOW固有のAPIです。
+
 ## コアの利用
 
-アプリのmanifestに `$(MODDABLE)/examples/manifest_base.json` とこのディレクトリをincludeします。Wi-Fiを使うアプリは別途 `$(MODDABLE)/modules/embedded/network/interface/wifi` もincludeしてください。
+アプリのmanifestに `$(MODDABLE)/examples/manifest_base.json` とこのディレクトリの `manifest_core.json` をincludeします。Wi-Fiを使うアプリは別途 `$(MODDABLE)/modules/embedded/network/interface/wifi` もincludeしてください。
 
 ```js
 import WiFi from "embedded:network/interface/wifi";
-import ESPNow, { BROADCAST } from "espnow";
+import ESPNowCore, { BROADCAST } from "espnow/core";
 
 const wifi = new WiFi({ onChanged() {} });
-const radio = new ESPNow({
+const radio = new ESPNowCore({
   channel: 1,
   format: "buffer",
   onReadable(count) {
@@ -39,7 +41,7 @@ radio.write(Uint8Array.of(1, 2, 3), BROADCAST);
 
 | API                                              | 内容                                                                      |
 | ------------------------------------------------ | ------------------------------------------------------------------------- |
-| `new ESPNow(options)`                            | 既に動作しているWi-Fi上でESP-NOWを初期化。同時に1つ                       |
+| `new ESPNowCore(options)`                        | optionsオブジェクト必須。既に動作しているWi-Fi上でESP-NOWを初期化。同時に1つ |
 | `target`                                         | constructorのtargetを公開プロパティに保存。コールバックのthisから参照可能 |
 | `id` / `info`                                    | MAC、チャネル、バージョン、最大データ長、全登録数、暗号化した相手の登録数 |
 | `format`                                         | `"buffer"` のみ対応                                                       |
@@ -48,6 +50,7 @@ radio.write(Uint8Array.of(1, 2, 3), BROADCAST);
 | `onSent({ peerId, success })`                    | MAC送信結果を後で通知。writeから直接呼ばれない                            |
 | `onReadable(count)`                              | 読み出せるパケットの件数を後で通知                                        |
 | `read()`                                         | メタデータ付きArrayBufferを1件返す。空ならundefined                       |
+| `read(buffer)`                                   | 指定したByte Bufferに1パケットを書き込み、バイト数を返す。空ならundefined |
 | `addPeer(id, { channel, interface, lmk })`       | 相手を登録・更新                                                          |
 | `getPeer(id)` / `hasPeer(id)` / `removePeer(id)` | 登録情報参照・確認・削除。LMKは返さない                                   |
 | `configure({ channel, pmk })`                    | チャネル・PMK変更。送信中は不可                                           |
@@ -56,18 +59,24 @@ radio.write(Uint8Array.of(1, 2, 3), BROADCAST);
 
 コールバックの `this` はコアのインスタンスです。ネイティブ処理からの内部通知メソッドは公開しません。
 
+optionsは省略できません。設定を省く場合も `new ESPNowCore({})` とします。コアはoptionsを書き換えず、対応する各プロパティを一度だけ読み取ります。コールバックは構築時に保存し、`null` または省略で通知を無効にできます。未知のプロパティと `io` は無視します。通常のAPIである `new ESPNow()` は引き続き引数を省略できます。
+
 `read()` の戻り値はArrayBufferで、`peerId`、`destination`、`broadcast`、`rssi`、`channel` が付いています。UDP同様、通知後にreadで取り出します。受信バッファは `receiveQueueLength`（既定8件）で制限し、満杯なら新着パケットを破棄します。これはreadのための受信バッファであり、送信待ちキューではありません。
+
+`read(buffer)` は指定したバッファに1パケットをコピーし、同じメタデータをそのバッファに付けます。ビューを渡した場合は、そのビューの範囲に書き込みます。バッファが小さい場合は例外を投げ、パケットは未読のまま残します。パケットの一部だけを読み出すことはできません。現実装では受信時にArrayBufferを作るため、`read(buffer)` を使っても受信時のメモリ確保はなくなりません。
 
 コアは送信データをJavaScriptでコピーせず、ESP-IDFへ渡します。ESP-IDFはwriteが戻った後の送信元バッファを必要としません。次のwriteはonSentを受けてから呼びます。onSentは「次を送れる」通知とは区別したESP-NOW固有の結果通知で、成功しても相手アプリの受信を保証しません。ブロードキャストでは相手の受信自体も保証しません。
 
-## アプリ向けのラッパー
+Serialの `onWritable(bytes)` は送信可能なバイト数を知らせる通知です。コアは1件ずつ送信し、送信結果を `onSent` で知らせます。このため、`onWritable` は提供しません。
 
-`manifest_queued.json` をincludeすると、コアとWi-Fiも含まれます。
+## 通常のアプリでの利用
+
+アプリのmanifestに `$(MODDABLE)/examples/manifest_base.json` とこのディレクトリをincludeします。`manifest.json` にはコアとWi-Fiも含まれます。
 
 ```js
-import QueuedESPNow from "espnow/queued";
+import ESPNow from "espnow";
 
-const radio = new QueuedESPNow({
+const radio = new ESPNow({
   channel: 1,
   queueLimit: 32,
   onReceive({ peerId, data }) {
@@ -87,23 +96,25 @@ radio.close();
 - 旧版のofflineChannelとaddPeer(id, lmk)はこのラッパーだけで受け付けます。
 - 無線の結果通知が失われた場合は後続送信を進めず、closeで破棄できます。タイムアウトや再送はアプリ側で実装してください。
 
-Stack-chanのアダプターと画面付きサンプルはこのラッパーを使います。
+Stack-chanのアダプターと画面付きサンプルは `espnow` を使います。
+
+以前の `espnow/queued` を使っているアプリは、import先を `espnow` に変更してください。低水準APIを使っているアプリは、import先を `espnow/core` に、include先を `manifest_core.json` に変更してください。クラス名とオプション型名は、通常のAPIが `ESPNow` と `ESPNowOptions`、低水準APIが `ESPNowCore` と `ESPNowCoreOptions` です。旧 `manifest_queued.json` は `manifest.json` をincludeする移行用ファイルとして残しています。
 
 ## 通信とWi-Fiの設定
 
 - MACは12桁の16進数かコロン区切りを受け付け、戻り値は区切りなしの大文字です。
-- `data` はArrayBufferかUint8Array、長さは1〜info.maxDataLengthバイトです。v1は250、対応するv2は最大1470バイトです。相手のバージョンを自動検出しないため、古い端末へは250バイト以内にしてください。
+- `data` はECMA-419のByte Buffer（ArrayBuffer、SharedArrayBuffer、Uint8Array、Int8Array、DataView）を受け付けます。長さは1〜info.maxDataLengthバイトです。v1は250、対応するv2は最大1470バイトです。相手のバージョンを自動検出しないため、古い端末へは250バイト以内にしてください。
 - コアのwriteで宛先を省略するとBROADCASTです。ラッパーのsend(undefined, data)も同じです。ESP-IDFのNULL宛先による全登録相手への送信とは異なります。
 - ブロードキャスト相手は自動登録し、info.peerCountにも含みます。削除後に再送する場合は再登録してください。
 - コアのchannel既定値は0（現在のチャネルを維持）、ラッパーはWi-Fiを管理する場合1です。AP接続中は接続先のチャネルを維持し、configureでのチャネル変更は拒否します。1〜14の利用可否は国・端末設定にも従います。
 - interfaceはsta（既定）またはapです。対象インターフェースの有効化、AP作成、接続・スキャン・省電力との調整はアプリが担当します。
-- pmkと相手ごとのlmkは16バイトです。PMK未指定時はESP-IDFの既定値を使います。暗号化通信は相互に同じLMKで相手を登録してください。ブロードキャストの暗号化はできません。broadcastは認証済みを意味しません。
+- pmkと相手ごとのlmkは16バイトのByte Bufferです。PMK未指定時はESP-IDFの既定値を使います。暗号化通信は相互に同じLMKで相手を登録してください。ブロードキャストの暗号化はできません。broadcastは認証済みを意味しません。
 - 相手の登録上限はESP-IDF・sdkconfigに従います。送信中やラッパーの待機中に相手の登録を変更すると送信結果に影響します。
-- モジュール実装はespnow.tsとqueued.tsです。公開型も実装からexportしており、mcconfigがTypeScriptをコンパイルします。
+- 通常のAPIの実装は `espnow.ts`、低水準APIの実装は `core.ts` と `core.c` です。公開型もTypeScriptの実装からexportしており、mcconfigがTypeScriptをコンパイルします。
 
 ## 画面付きの送信・受信サンプル
 
-M5Stack CoreS3など、320×240以上の画面を持つESP32端末を2台用意してください。サンプルはアプリ向けの `espnow/queued` とPiuのLabelを使い、タッチ操作なしで通信を開始します。画面にはMAC、チャネル、TX/RX/エラー件数、相手MAC、RSSI、PING/PONGの連番、返信時間を表示します。表示言語は端末フォントに合わせて英語です。
+M5Stack CoreS3など、320×240以上の画面を持つESP32端末を2台用意してください。サンプルは `espnow` とPiuのLabelを使い、タッチ操作なしで通信を開始します。画面にはMAC、チャネル、TX/RX/エラー件数、相手MAC、RSSI、PING/PONGの連番、返信時間を表示します。表示言語は端末フォントに合わせて英語です。
 
 | 端末   | manifest                                                   | 動作                                                     |
 | ------ | ---------------------------------------------------------- | -------------------------------------------------------- |
@@ -133,7 +144,7 @@ M5Stack CoreS3など、320×240以上の画面を持つESP32端末を2台用意�
 
 `peerId` を設定するとユニキャストで送信します。暗号化を試す場合は、両方のmanifestに相手のMACと同じPMK・LMKを設定します。ここに示した鍵はサンプル専用です。受信側の `role` は `receiver` のままにしてください。CHは両方で同じにします。
 
-確認手順:
+確認手順は次のとおりです。
 
 1. 受信側を起動し、画面のMACとCHを確認する。
 2. 送信側を起動し、双方のTX/RXと連番が増え、送信側に `Reply in ... ms` が出ることを確認する。
