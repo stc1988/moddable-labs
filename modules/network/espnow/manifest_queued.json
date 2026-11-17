@@ -1,4 +1,4 @@
 {
-	"warning": "ESP-NOW manifest_queued.json moved to manifest.json; import espnow instead of espnow/queued",
-	"include": ["."]
+  "warning": "ESP-NOW manifest_queued.json moved to manifest.json; import espnow instead of espnow/queued",
+  "include": ["."]
 }

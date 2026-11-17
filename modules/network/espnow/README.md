@@ -2,9 +2,9 @@
 
 ESP-IDF 5.0以降のESP32向けモジュールです。通常のアプリでは `espnow` を使います。送受信やWi-Fiの管理をアプリ側で行う場合は、低水準APIの `espnow/core` を使えます。どちらもModdableのI/O APIを参考にした独自APIであり、ECMA-419で標準化されたESP-NOW APIではありません。
 
-| モジュール      | 役割                                                     | manifest               |
-| --------------- | -------------------------------------------------------- | ---------------------- |
-| `espnow`      | Promise、送信キュー、データのコピー、Wi-Fiの自動初期化 | `manifest.json`      |
+| モジュール    | 役割                                                     | manifest             |
+| ------------- | -------------------------------------------------------- | -------------------- |
+| `espnow`      | Promise、送信キュー、データのコピー、Wi-Fiの自動初期化   | `manifest.json`      |
 | `espnow/core` | 同期write、read、受信通知、MAC送信結果、相手の登録と設定 | `manifest_core.json` |
 
 コアはWi-Fiをimport・初期化・終了しません。アプリがWi-Fiの開始と終了を管理します。独自ヘッダー、相手の発見、JSON、再送、分割・再構成、アプリケーションACKはどちらにも含みません。
@@ -39,23 +39,23 @@ radio.write(Uint8Array.of(1, 2, 3), BROADCAST);
 // 終了時は radio.close() の後で wifi.close() を呼びます。
 ```
 
-| API                                              | 内容                                                                      |
-| ------------------------------------------------ | ------------------------------------------------------------------------- |
+| API                                              | 内容                                                                         |
+| ------------------------------------------------ | ---------------------------------------------------------------------------- |
 | `new ESPNowCore(options)`                        | optionsオブジェクト必須。既に動作しているWi-Fi上でESP-NOWを初期化。同時に1つ |
-| `target`                                         | constructorのtargetを公開プロパティに保存。コールバックのthisから参照可能 |
-| `id` / `info`                                    | MAC、チャネル、バージョン、最大データ長、全登録数、暗号化した相手の登録数 |
-| `format`                                         | `"buffer"` のみ対応                                                       |
-| `writable`                                       | 送信中でなければtrue                                                      |
-| `write(data, peerId)`                            | 同期呼び出しで1件送信。戻り値なし。送信中や入力不正はその場で例外         |
-| `onSent({ peerId, success })`                    | MAC送信結果を後で通知。writeから直接呼ばれない                            |
-| `onReadable(count)`                              | 読み出せるパケットの件数を後で通知                                        |
-| `read()`                                         | メタデータ付きArrayBufferを1件返す。空ならundefined                       |
-| `read(buffer)`                                   | 指定したByte Bufferに1パケットを書き込み、バイト数を返す。空ならundefined |
-| `addPeer(id, { channel, interface, lmk })`       | 相手を登録・更新                                                          |
-| `getPeer(id)` / `hasPeer(id)` / `removePeer(id)` | 登録情報参照・確認・削除。LMKは返さない                                   |
-| `configure({ channel, pmk })`                    | チャネル・PMK変更。送信中は不可                                           |
-| `close()` / `[Symbol.dispose]()`                 | 同じ終了処理。複数回呼べる。以後のコールバックは止まる                    |
-| `getESPNowId()`                                  | STAのMACアドレスを取得                                                    |
+| `target`                                         | constructorのtargetを公開プロパティに保存。コールバックのthisから参照可能    |
+| `id` / `info`                                    | MAC、チャネル、バージョン、最大データ長、全登録数、暗号化した相手の登録数    |
+| `format`                                         | `"buffer"` のみ対応                                                          |
+| `writable`                                       | 送信中でなければtrue                                                         |
+| `write(data, peerId)`                            | 同期呼び出しで1件送信。戻り値なし。送信中や入力不正はその場で例外            |
+| `onSent({ peerId, success })`                    | MAC送信結果を後で通知。writeから直接呼ばれない                               |
+| `onReadable(count)`                              | 読み出せるパケットの件数を後で通知                                           |
+| `read()`                                         | メタデータ付きArrayBufferを1件返す。空ならundefined                          |
+| `read(buffer)`                                   | 指定したByte Bufferに1パケットを書き込み、バイト数を返す。空ならundefined    |
+| `addPeer(id, { channel, interface, lmk })`       | 相手を登録・更新                                                             |
+| `getPeer(id)` / `hasPeer(id)` / `removePeer(id)` | 登録情報参照・確認・削除。LMKは返さない                                      |
+| `configure({ channel, pmk })`                    | チャネル・PMK変更。送信中は不可                                              |
+| `close()` / `[Symbol.dispose]()`                 | 同じ終了処理。複数回呼べる。以後のコールバックは止まる                       |
+| `getESPNowId()`                                  | STAのMACアドレスを取得                                                       |
 
 コールバックの `this` はコアのインスタンスです。ネイティブ処理からの内部通知メソッドは公開しません。
 

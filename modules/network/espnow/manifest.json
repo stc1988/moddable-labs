@@ -1,6 +1,9 @@
 {
-	"include": ["./manifest_core.json", "$(MODDABLE)/modules/embedded/network/interface/wifi"],
-	"modules": {
-		"espnow": "./espnow"
-	}
+  "include": [
+    "./manifest_core.json",
+    "$(MODDABLE)/modules/embedded/network/interface/wifi"
+  ],
+  "modules": {
+    "espnow": "./espnow"
+  }
 }
