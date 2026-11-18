@@ -249,6 +249,10 @@ M5Stack CoreS3など、320×240以上の画面を持つESP32端末を2台用意�
 
 ログだけの最小例は `examples/network/espnow/broadcast/minimal` に残しています。
 
+## ESP-IDF形式での相手発見と暗号化通信
+
+[IDFサンプル移植例](../../../examples/network/espnow/idf-peer/README.md) は、`espnow/core` を直接使い、CRC付きブロードキャストでの相手発見、LMK付き登録、暗号化ユニキャストへの切り替えを確認します。IDF v6.1公式サンプルと同じヘッダー・CRC形式を使います。実機相互通信の確認手順と、ホスト上の互換性テストも同READMEにあります。
+
 ## 検証と参照
 
 リポジトリのルートから `node --test modules/network/espnow/tests/*.test.mjs` で、TypeScriptをコンパイルし、偽のネイティブ・Wi-Fi・Piu環境で検証します。`tsc` とホストのCコンパイラー（`cc`、AddressSanitizer/UndefinedBehaviorSanitizer対応）がPATHに必要です。送信完了・ACKの紛失、重複、待機中の値の置き換え、復旧、ネイティブの受信上限と破棄数、close時の寿命も検証します。ネイティブテストは実装のCコールバック部分をホスト用スタブと組み合わせて実行します。無線や実際の描画を検証するものではありません。

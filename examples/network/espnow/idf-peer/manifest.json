@@ -1,0 +1,19 @@
+{
+  "include": [
+    "$(MODDABLE)/examples/manifest_base.json",
+    "../../../../modules/network/espnow/manifest_core.json",
+    "$(MODDABLE)/modules/embedded/network/interface/wifi"
+  ],
+  "modules": {
+    "*": ["./main", "./exchange", "./protocol"]
+  },
+  "config": {
+    "idfPeer": {
+      "channel": 1,
+      "length": 10,
+      "count": 100,
+      "delay": 1000,
+      "sendTimeout": 2000
+    }
+  }
+}
